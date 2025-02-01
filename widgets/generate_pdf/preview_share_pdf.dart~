@@ -1,0 +1,9 @@
+import 'package:printing/printing.dart';
+
+void previewInvoice(Uint8List pdfData) async {
+  await Printing.layoutPdf(onLayout: (format) async => pdfData);
+}
+
+void shareInvoice(Uint8List pdfData) async {
+  await Printing.sharePdf(bytes: pdfData, filename: 'invoice.pdf');
+}

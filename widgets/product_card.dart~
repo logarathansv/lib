@@ -1,0 +1,93 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+
+import '../models/product.dart';
+
+class ProductCard extends StatelessWidget {
+  final Product product;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const ProductCard({
+    Key? key,
+    required this.product,
+    required this.onEdit,
+    required this.onDelete,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.all(10),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          product.imageUrl.startsWith('http')
+              ? CachedNetworkImage(
+            imageUrl: product.imageUrl,
+            height: 120,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) => Icon(Icons.error),
+          )
+              : Image.file(
+            File(product.imageUrl),
+            height: 120,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  product.description,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+                SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '\$${product.price.toStringAsFixed(2)}',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    ),
+                    Text(
+                      'Qty: ${product.quantity}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                ButtonBar(
+                  alignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: onEdit,
+                      icon: Icon(Icons.edit, color: Colors.blueAccent),
+                    ),
+                    IconButton(
+                      onPressed: onDelete,
+                      icon: Icon(Icons.delete, color: Colors.redAccent),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

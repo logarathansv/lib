@@ -1,0 +1,1016 @@
+Remeber all these codes, i will give more, you will help me connect fronend and backend later on
+
+import '../../../models/crm_model/dashboard/growth_rate.dart';
+import '../../../models/crm_model/dashboard/retention_rate.dart';
+
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  String filter = "Monthly"; // Default filter
+  List<double> customersData = [300, 200, 400, 600]; // Mock data for customers
+  List<double> growthData = [5, 15, 20, 10]; // Mock growth rate data
+  double retentionRate = 80; // Mock retention rate
+  double totalRevenue = 1000; // Mock total revenue
+  double profit = 200; // Mock profit
+  double loss = 50; // Mock loss
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text("Dashboard"),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              CustomerGraph(),
+              GrowthRateGraph(),
+              const RetentionCard(
+                retentionRate: 50.0,
+              ),
+              _buildRevenueCard(1000, 20),
+              const SizedBox(height: 20), // Spacing
+              _buildDataTable(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard({required String title, required Widget child}) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            SizedBox(
+                height: 200, child: child), // Fix height to ensure uniformity
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueCard(double profit, double profitPercentage) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Total Revenue",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Profit: \$${profit.toStringAsFixed(2)} (${profitPercentage.toStringAsFixed(1)}%)",
+                      style: const TextStyle(color: Colors.green, fontSize: 18),
+                    ),
+                    const SizedBox(height: 5),
+                    const Row(
+                      children: [
+                        Icon(Icons.trending_up, color: Colors.green),
+                        SizedBox(width: 5),
+                        Text(
+                          "Revenue is on the rise",
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const Icon(Icons.attach_money,
+                    size: 50, color: Color(0xff036c7b)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDataTable() {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Additional Data",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            DataTable(columns: const [
+              DataColumn(
+                  label: Text('Metric',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Value',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+            ], rows: const [
+              DataRow(cells: [
+                DataCell(Text('Total Customers')),
+                DataCell(Text('1000')),
+              ]),
+              DataRow(cells: [
+                DataCell(Text('Growth Rate')),
+                DataCell(Text('15%')),
+              ]),
+              DataRow(cells: [
+                DataCell(Text('Retention Rate')),
+                DataCell(Text('80%')),
+              ]),
+              DataRow(cells: [
+                DataCell(Text('Churn Rate')),
+                DataCell(Text('20%')),
+              ]),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+### File: C:\Users\mani2\sklyit\sklyit_business\lib\screens\crm\tabs\performance.dart ###
+
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+import '../../../models/service_demand.dart';
+import '../../../utils/service_demand_bar_chart.dart';
+
+class PerformanceComparison extends StatefulWidget {
+  const PerformanceComparison({super.key});
+
+  @override
+  _PerformanceComparisonState createState() => _PerformanceComparisonState();
+}
+
+class _PerformanceComparisonState extends State<PerformanceComparison> {
+  // Sample data for the last 6 months
+  final List<Map<String, dynamic>> monthlyData = [
+    {
+      'month': 'July',
+      'totalCustomers': 150,
+      'newCustomers': 50,
+      'revenue': 2000,
+    },
+    {
+      'month': 'August',
+      'totalCustomers': 160,
+      'newCustomers': 60,
+      'revenue': 2100,
+    },
+    {
+      'month': 'September',
+      'totalCustomers': 170,
+      'newCustomers': 70,
+      'revenue': 2200,
+    },
+    {
+      'month': 'October',
+      'totalCustomers': 180,
+      'newCustomers': 80,
+      'revenue': 2400,
+    },
+    {
+      'month': 'November',
+      'totalCustomers': 190,
+      'newCustomers': 90,
+      'revenue': 2500,
+    },
+    {
+      'month': 'December',
+      'totalCustomers': 200,
+      'newCustomers': 100,
+      'revenue': 2600,
+    },
+  ];
+
+  // To hold the selected month index, starting with December (index 5)
+  int _selectedMonthIndex = 5;
+
+  // Service demand data
+  List<ServiceDemand> serviceData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _updateServiceData(); // Initialize the service data with the selected month
+  }
+
+  // Update service demand data based on the selected month
+  void _updateServiceData() {
+    final monthData = monthlyData[_selectedMonthIndex];
+    setState(() {
+      serviceData = [
+        ServiceDemand(
+            serviceName: 'Service A',
+            month: _selectedMonthIndex,
+            demand: monthData['newCustomers'] * 2), // Example logic for demand
+        ServiceDemand(
+            serviceName: 'Service B',
+            month: _selectedMonthIndex,
+            demand: monthData['totalCustomers'] - monthData['newCustomers']),
+      ];
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Performance Comparison'),
+      ),
+      body: ListView(
+        children: [
+          _buildMonthlyComparison(),
+          _buildPieChart(),
+          const SizedBox(height: 40),
+          ServiceDemandBarChart(
+              serviceData:
+                  serviceData), // Bar chart will update when the serviceData changes
+        ],
+      ),
+    );
+  }
+
+  // Monthly Comparison Section
+  Widget _buildMonthlyComparison() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Center(
+              child: Text(
+                'Monthly Comparison',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            )),
+        // Arrow buttons to navigate between months
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left),
+                onPressed: _selectedMonthIndex > 0
+                    ? () {
+                        setState(() {
+                          _selectedMonthIndex--;
+                          _updateServiceData(); // Update service data when month changes
+                        });
+                      }
+                    : null,
+              ),
+              Text(
+                monthlyData[_selectedMonthIndex]['month'],
+                style: const TextStyle(fontSize: 18),
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_right),
+                onPressed: _selectedMonthIndex < monthlyData.length - 1
+                    ? () {
+                        setState(() {
+                          _selectedMonthIndex++;
+                          _updateServiceData(); // Update service data when month changes
+                        });
+                      }
+                    : null,
+              ),
+            ],
+          ),
+        ),
+        // Month label and data display
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDataRow(
+                      Icons.people,
+                      'Total Customers',
+                      monthlyData[_selectedMonthIndex]['totalCustomers']
+                          .toString()),
+                  _buildDataRow(
+                      Icons.person_add,
+                      'New Customers',
+                      monthlyData[_selectedMonthIndex]['newCustomers']
+                          .toString()),
+                  _buildDataRow(Icons.monetization_on_outlined, 'Revenue',
+                      '\$${monthlyData[_selectedMonthIndex]['revenue']}'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDataRow(IconData icon, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(icon,
+                  color: Colors.blue, size: 24), // Icon next to the title
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Pie Chart for Monthly Comparison
+  Widget _buildPieChart() {
+    final monthData = monthlyData[_selectedMonthIndex];
+    final totalCustomers = monthData['totalCustomers'];
+    final newCustomers = monthData['newCustomers'];
+    final oldCustomers = totalCustomers - newCustomers;
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 200, // Set a specific height to ensure the chart is rendered
+        child: PieChart(
+          PieChartData(
+            sections: [
+              PieChartSectionData(
+                value: newCustomers.toDouble(),
+                color: Colors.blue,
+                title: 'New: $newCustomers',
+                radius: 50,
+                titleStyle: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              PieChartSectionData(
+                value: oldCustomers.toDouble(),
+                color: Colors.orange,
+                title: 'Old: $oldCustomers',
+                radius: 50,
+                titleStyle: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ],
+            borderData: FlBorderData(show: false),
+            centerSpaceRadius: 40,
+            sectionsSpace: 2, // Space between pie chart sections
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+### File: C:\Users\mani2\sklyit\sklyit_business\lib\screens\crm\tabs\revenue_insights.dart ###
+
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+
+class RevenueInsightsPage extends StatefulWidget {
+  const RevenueInsightsPage({super.key});
+
+  @override
+  _RevenueInsightsPageState createState() => _RevenueInsightsPageState();
+}
+
+class _RevenueInsightsPageState extends State<RevenueInsightsPage> {
+  // Index for time period: 0 = Weekly, 1 = Monthly, 2 = Yearly
+  int selectedPeriodIndex = 0;
+
+  // Data for services (top 3 services and others)
+  final List<String> services = [
+    "Service 1",
+    "Service 2",
+    "Service 3",
+    "Others"
+  ];
+  final List<List<double>> revenueData = [
+    [5000.0, 4000.0, 3000.0, 1500.0], // Weekly data
+    [20000.0, 18000.0, 15000.0, 8000.0], // Monthly data
+    [50000.0, 45000.0, 40000.0, 20000.0], // Yearly data
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // Get the revenue data based on the selected period (weekly, monthly, yearly)
+    final currentRevenueData = revenueData[selectedPeriodIndex];
+
+    // Title for the graph based on selected period
+    final title = selectedPeriodIndex == 0
+        ? "Weekly Insights"
+        : selectedPeriodIndex == 1
+            ? "Monthly Insights"
+            : "Yearly Insights";
+
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Revenue Insights'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Title and Slider for selecting period
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: Icon(
+                    selectedPeriodIndex == 0
+                        ? Icons.arrow_forward
+                        : selectedPeriodIndex == 1
+                            ? Icons.arrow_back
+                            : Icons.refresh,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      // Toggle between weekly, monthly, and yearly
+                      selectedPeriodIndex = (selectedPeriodIndex + 1) % 3;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Bar Chart
+            AspectRatio(
+              aspectRatio: 1.7,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: currentRevenueData.reduce((a, b) => a > b ? a : b) +
+                      1000, // Scale Y-axis
+                  barGroups: List.generate(
+                    currentRevenueData.length,
+                    (index) => BarChartGroupData(
+                      x: index,
+                      barRods: [
+                        BarChartRodData(
+                          toY: currentRevenueData[index],
+                          color: index == currentRevenueData.length - 1
+                              ? Colors.grey // Color for 'Others' bar
+                              : Colors.blue, // Color for individual services
+                          width: 30,
+                          borderRadius: BorderRadius.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          int index = value.toInt();
+                          if (index >= 0 && index < services.length) {
+                            return Text(
+                              services[index],
+                              style: const TextStyle(color: Colors.black),
+                            );
+                          }
+                          return const Text('');
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize:
+                            50, // Increase reserved size for better spacing
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(color: Colors.black),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                        sideTitles:
+                            SideTitles(showTitles: false)), // No top titles
+                    rightTitles: const AxisTitles(
+                        sideTitles:
+                            SideTitles(showTitles: false)), // No right titles
+                  ),
+                  gridData: const FlGridData(show: true), // Optional grid lines
+                  borderData: FlBorderData(
+                    show: true,
+                    border:
+                        Border.all(color: Colors.black26), // Optional border
+                  ),
+                ),
+              ),
+            ),
+            const Text(
+              'Contribution of New and Old Customers',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+
+            // Row for displaying percentages in a larger font
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      '60%',
+                      style: TextStyle(
+                          fontSize: 40,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'New Customers',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 40), // Space between the two columns
+                Column(
+                  children: [
+                    Text(
+                      '40%',
+                      style: TextStyle(
+                          fontSize: 40,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Old Revenue',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+### File: C:\Users\mani2\sklyit\sklyit_business\lib\screens\crm\tabs\service_insights.dart ###
+
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+class ServiceInsightsPage extends StatefulWidget {
+  const ServiceInsightsPage({super.key});
+
+  @override
+  State<ServiceInsightsPage> createState() => _ServiceInsightsPageState();
+}
+
+class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
+  String _view = 'Weekly';
+  // Default view is weekly
+  final List<TrendData> _weeklyData = [
+    TrendData(year: 'Mon', bookings: 100),
+    TrendData(year: 'Tue', bookings: 200),
+    TrendData(year: 'Wed', bookings: 300),
+  ];
+
+  final List<TrendData> _monthlyData = [
+    TrendData(year: 'Jan', bookings: 800),
+    TrendData(year: 'Feb', bookings: 600),
+    TrendData(year: 'Mar', bookings: 400),
+  ];
+
+  final List<TrendData> _yearlyData = [
+    TrendData(year: '2021', bookings: 1000),
+    TrendData(year: '2022', bookings: 1500),
+    TrendData(year: '2023', bookings: 2000),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    List<TrendData> trendData;
+
+    switch (_view) {
+      case 'Monthly':
+        trendData = _monthlyData;
+        break;
+      case 'Yearly':
+        trendData = _yearlyData;
+        break;
+      default:
+        trendData = _weeklyData;
+    }
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Service Insights'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            buildTopServices(),
+            buildUsageStats(),
+            buildRevenueStats(),
+            buildServiceTrends(trendData),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildTopServices() {
+    // Sample Data for Top Services
+    final List<ServiceData> data = [
+      ServiceData(serviceName: 'Facial', bookings: 150),
+      ServiceData(serviceName: 'Massage', bookings: 120),
+      ServiceData(serviceName: 'Haircut', bookings: 100),
+    ];
+
+    return Card(
+      margin: const EdgeInsets.all(10),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text(
+              'Top 3 Services',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            ...data.map((service) => ListTile(
+                  title: Text(service.serviceName),
+                  trailing: Text('${service.bookings} Bookings'),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildUsageStats() {
+    // Sample Data for Most Used and Least Used Services
+    final List<ServiceData> mostUsed = [
+      ServiceData(serviceName: 'Facial', bookings: 150),
+      ServiceData(serviceName: 'Massage', bookings: 120),
+      ServiceData(serviceName: 'Haircut', bookings: 100),
+    ];
+
+    final List<LeastUsedService> leastUsed = [
+      LeastUsedService(
+          serviceName: 'Nail Art',
+          bookings: 20,
+          areaToImprove: 'Increase marketing and visibility'),
+      LeastUsedService(
+          serviceName: 'Makeup',
+          bookings: 15,
+          areaToImprove: 'Provide promotional discounts'),
+    ];
+
+    // Create BarChartGroupData for Most Used
+    List<BarChartGroupData> barGroups = [];
+    for (var i = 0; i < mostUsed.length; i++) {
+      barGroups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: mostUsed[i].bookings.toDouble(),
+              color: Colors.blue,
+              width: 15,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      margin: const EdgeInsets.all(10),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top 3 Most Used Services',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 300,
+              child: BarChart(
+                BarChartData(
+                  barGroups: barGroups,
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40, // Increase space for the left titles
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(color: Colors.black),
+                          );
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 38, // Space for the bottom titles
+                        getTitlesWidget: (value, meta) {
+                          // Make sure to handle index-based service names
+                          return Text(
+                            mostUsed[value.toInt()].serviceName,
+                            style: const TextStyle(color: Colors.black),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(
+                            showTitles: false)), // Disable top titles
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(
+                            showTitles: false)), // Disable right titles
+                  ),
+                  borderData: FlBorderData(show: false), // No border
+                  gridData: const FlGridData(show: true), // Show grid lines
+                  barTouchData: BarTouchData(
+                      enabled: false), // Disable touch interactions
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Areas to Improve',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            ...leastUsed.map((service) => Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: ListTile(
+                    title: Text(service.serviceName),
+                    subtitle: Text('Bookings: ${service.bookings}'),
+                    trailing: Text(service.areaToImprove),
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildRevenueStats() {
+    // Sample Data for Top Earning Services
+    final List<ServiceRevenueData> revenueData = [
+      ServiceRevenueData(service: 'Facial', revenue: 3000),
+      ServiceRevenueData(service: 'Massage', revenue: 2400),
+      ServiceRevenueData(service: 'Haircut', revenue: 1800),
+    ];
+
+    return Card(
+      margin: const EdgeInsets.all(10),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text('Top Earning Services',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...revenueData.map((data) => ListTile(
+                  title: Text(data.service),
+                  trailing: Text('\$${data.revenue}'),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildServiceTrends(List<TrendData> trendData) {
+    return Card(
+      margin: const EdgeInsets.all(10),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Service Trends Over Time',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: () {
+                    setState(() {
+                      switch (_view) {
+                        case 'Weekly':
+                          _view = 'Monthly';
+                          break;
+                        case 'Monthly':
+                          _view = 'Yearly';
+                          break;
+                        case 'Yearly':
+                          _view = 'Weekly';
+                          break;
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+            // Display the selected time period (Weekly, Monthly, or Yearly)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'View: $_view',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(
+              height: 250, // Increased height for better visualization
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize:
+                            40, // Increased reserved size to avoid overlap
+                        getTitlesWidget: (value, meta) {
+                          return Text(value.toInt().toString(),
+                              style: const TextStyle(fontSize: 12));
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 38,
+                        getTitlesWidget: (value, meta) {
+                          int index = value.toInt();
+
+                          // Handle time periods and ensure single label per data point
+                          if (_view == 'Weekly') {
+                            // Show 'Week X'
+                            return Text('W${index + 1}');
+                          } else if (_view == 'Monthly') {
+                            // Show Month names
+                            const months = [
+                              'Jan',
+                              'Feb',
+                              'Mar',
+                              'Apr',
+                              'May',
+                              'Jun',
+                              'Jul',
+                              'Aug',
+                              'Sep',
+                              'Oct',
+                              'Nov',
+                              'Dec'
+                            ];
+                            if (index < months.length) {
+                              return Text(months[index]);
+                            }
+                          } else if (_view == 'Yearly') {
+                            // Show Yearly labels
+                            return Text('Year ${index + 2020}');
+                          }
+                          return Container(); // Default case
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(
+                            showTitles: false)), // Remove top axis labels
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(
+                            showTitles: false)), // Remove right axis labels
+                  ),
+                  borderData: FlBorderData(show: true),
+                  minX: 0,
+                  maxX: trendData.length.toDouble() - 1,
+                  minY: 0,
+                  maxY: trendData
+                          .map((e) => e.bookings.toDouble())
+                          .reduce((a, b) => a > b ? a : b) +
+                      100, // Ensure y-axis has a consistent scale
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: trendData
+                          .asMap()
+                          .entries
+                          .map((e) => FlSpot(
+                              e.key.toDouble(), e.value.bookings.toDouble()))
+                          .toList(),
+                      isCurved: true,
+                      color: Colors.blue,
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ServiceData {
+  final String serviceName;
+  final int bookings;
+
+  ServiceData({required this.serviceName, required this.bookings});
+}
+
+class ServiceRevenueData {
+  final String service;
+  final int revenue;
+
+  ServiceRevenueData({required this.service, required this.revenue});
+}
+
+class TrendData {
+  final String year;
+  final int bookings;
+
+  TrendData({required this.year, required this.bookings});
+}
+
+class LeastUsedService {
+  final String serviceName;
+  final int bookings;
+  final String areaToImprove;
+
+  LeastUsedService(
+      {required this.serviceName,
+      required this.bookings,
+      required this.areaToImprove});
+}

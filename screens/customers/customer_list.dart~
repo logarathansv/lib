@@ -1,0 +1,166 @@
+import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:sklyit_business/screens/customers/customer_details.dart';
+import '../../models/customer_model/customer_class.dart';
+import '../../utils/get_customer_details/get_customer_details.dart';
+import '../../widgets/customer_cards/customer_view.dart';
+
+class AddCustomerPage extends StatefulWidget {
+  @override
+  _AddCustomerPageState createState() => _AddCustomerPageState();
+}
+
+class _AddCustomerPageState extends State<AddCustomerPage> {
+  List<Customer> _customers = [
+    Customer(
+      name: 'John Doe',
+      address: '123 Main St, City, Country',
+      email: 'johndoe@example.com',
+      phoneNumber: '+1 123 456 7890', labelColor: Colors.blue,
+    ),
+    Customer(
+      name: 'Jane Smith',
+      address: '456 Elm St, Town, Country',
+      email: 'janesmith@example.com',
+      phoneNumber: '+1 987 654 3210',
+      labelColor: Colors.green,
+    ),
+  ];
+
+  final _searchController = TextEditingController();
+  List<Customer> _searchResults = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xfff4c345),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+            onPressed: () => {
+              Navigator.of(context).pop()
+            },
+            icon: HugeIcon(
+              icon: HugeIcons.strokeRoundedArrowLeft03,
+              color: Colors.black,
+              size: 24.0,
+            ),
+        ),
+        title: Text(
+          'Customers',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2f4757),
+          ),
+        ),
+      ),
+      body:
+      Stack(
+        children: [
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Search... ",
+                            prefixIcon: Icon(Icons.search),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                          ),
+                          onChanged: (text) => {
+                            _searchCustomers()
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _searchResults.isEmpty ? _customers.length : _searchResults.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => CustomerDetailsPage(customer : _customers[index])));
+                      },
+                      child: CustomerCard(
+                        customer: _searchResults.isEmpty ? _customers[index] : _searchResults[index],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 25, // Distance from the bottom
+            right: 20,  // Distance from the right
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => AddNewCustomerPage(),
+                    transitionDuration: Duration(milliseconds: 100),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: Offset(0, 1),
+                            end: Offset(0, 0),
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+              child: Icon(
+                Icons.add,
+                size: 30, // Larger icon size
+                color: Colors.white, // Icon color
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xfff4c345), // Button background color
+                shape: RoundedRectangleBorder( // Makes the button square
+                  borderRadius: BorderRadius.circular(8), // Slightly rounded corners
+                ),
+                padding: EdgeInsets.all(12), // Adjusts button size
+                minimumSize: Size(40, 40), // Ensures the button is square and large
+              ),
+            ),
+
+          ),
+        ],
+      )
+
+
+    );
+  }
+
+  void _searchCustomers() {
+    setState(() {
+      _searchResults = _customers
+          .where((customer) => customer.name.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+          customer.address.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+          customer.phoneNumber.toLowerCase().contains(_searchController.text.toLowerCase()))
+          .toList();
+    });
+  }
+}
+
+

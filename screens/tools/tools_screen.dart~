@@ -1,0 +1,253 @@
+import 'dart:ffi' hide Size;
+import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:provider/provider.dart';
+import 'package:sklyit_business/screens/tools/tools_store.dart';
+
+import '../../models/data.dart';
+import '../booking_management/booking_list.dart';
+import '../crm/crm_main.dart';
+import '../inventory/inventory_page.dart';
+import '../ledger.dart';
+import '../orders/orders_list.dart';
+import '../customers/customer_list.dart';
+import '../promotions/promotions_selection.dart';
+
+class ShowToolsPage extends StatefulWidget {
+  @override
+  _ShowToolsPageState createState() => _ShowToolsPageState();
+}
+
+class _ShowToolsPageState extends State<ShowToolsPage> {
+  final List<String> _iconname = ["Customers", "Orders", "Credit", "Bookings", "Promotions", "CRM","Inventory"];
+  final List<HugeIcon> _icons = [
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedUser,
+      color: Colors.blue,
+      size: 30,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedShoppingBasket01,
+      color: Colors.deepOrangeAccent,
+      size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedSaveMoneyDollar,
+      color: Colors.green,
+      size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedCalendar02,
+      color: Colors.pink,
+      size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedPromotion,
+      color: Colors.deepPurpleAccent,
+      size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedDashboardSpeed01,
+      color: Colors.red,
+      size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedWarehouse,
+      color: Color(0xfff4c345),
+      size: 24.0,
+    )
+  ];
+  final List<Widget> _pages = [
+    AddCustomerPage(),
+    AddOrdersPage(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<DataModel>(
+          create: (_) => DataModel(),
+        ),
+      ],
+      child: LedgerPage(),
+    ),
+    BookingPage(),
+    PromotionsPage(),
+    CRMPage(),
+    InventoryPage()
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(75),
+        child: Container(
+          child: Column(
+            children: [
+              AppBar(
+                title: Text(
+                  'Tools',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Divider(
+                thickness: 3,
+                color: Color(0xfff4c345),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4, // Always 4 icons per row
+                childAspectRatio: 1, // Ensures square items
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: _icons.length,
+              itemBuilder: (context, index) {
+                return TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 500),
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, secondaryAnimation) =>
+                                _pages[index],
+                                transitionDuration: Duration(milliseconds: 100),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  return SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: Offset(1, 0),
+                                      end: Offset(0, 0),
+                                    ).animate(animation),
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                child: _icons[index],
+                              ),
+                              SizedBox(height: 5), // Spacing between icon and text
+                              Text(
+                                '${_iconname[index]}',
+                                style: TextStyle(fontSize: 12), // Adjusted font size for consistency
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          // Animated Button at the right bottom
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: TweenAnimationBuilder<Offset>(
+              tween: Tween<Offset>(
+                begin: Offset(0, 1), // Start from the bottom
+                end: Offset(0, 0), // End at the original position
+              ),
+              duration: Duration(milliseconds: 800),
+              curve: Curves.easeOut,
+              builder: (context, offset, child) {
+                return SlideTransition(
+                  position: AlwaysStoppedAnimation<Offset>(offset), // Fixed the issue with SlideTransition
+                  child: GestureDetector(
+                    onTap: () {
+                      // When tapped, open the ToolsPackageStorePage with an animation
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              ToolsPackageStorePage(),
+                          transitionDuration: Duration(milliseconds: 600),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: Offset(0, 1),  // Starting from the bottom of the screen
+                                end: Offset(0, 0),    // Ending at the original position (center of the screen)
+                              ).animate(animation),
+                              child: child,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 200, // Adjust the width for the long button
+                      padding: EdgeInsets.symmetric(vertical: 9, horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedStore02,
+                            color: Colors.white,
+                            size: 24.0,
+                          ), // Store Icon
+                          SizedBox(width: 10),
+                          Text(
+                            "Tools Store",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

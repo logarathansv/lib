@@ -1,0 +1,153 @@
+import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'bank_settings.dart';
+import 'display_profile.dart';
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _notificationsEnabled = true;
+  bool _darkThemeEnabled = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+          title: RichText(
+        text: const TextSpan(
+          children: [
+            TextSpan(
+              text: 'Skly It ', // The unstyled part
+              style: TextStyle(
+                fontSize: 20,
+                fontFamily: 'Parkinsans',
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(47, 72, 88, 1),
+              ),
+            ),
+            TextSpan(
+              text: 'Professional ', // The styled part
+              style: TextStyle(
+                fontSize: 20,
+                fontFamily: 'Parkinsans',
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFF4C345), // Custom color for "Professional"
+              ),
+            ),
+          ],
+        ),
+      )),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            'Settings',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2F4757),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          SwitchListTile(
+            title: const Text('Enable Notifications'),
+            value: _notificationsEnabled,
+            onChanged: (value) {
+              setState(() {
+                _notificationsEnabled = value;
+              });
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Dark Theme'),
+            value: _darkThemeEnabled,
+            onChanged: (value) {
+              setState(() {
+                _darkThemeEnabled = value;
+                if (_darkThemeEnabled) {
+                  // Update theme to dark mode if needed
+                }
+              });
+            },
+            activeColor: Theme.of(context).primaryColor,
+          ),
+          ListTile(
+            title: const Text('Edit Profile'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => DisplayProfile()));
+            },
+          ),
+          ListTile(
+            title: const Text('Bank Settings'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => BankDetails()));
+            },
+          ),
+          ListTile(
+            title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              // Privacy policy logic
+            },
+          ),
+          ListTile(
+            title: const Text('Terms and Conditions'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              // Terms and conditions logic
+            },
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            icon: const HugeIcon(
+              icon: HugeIcons.strokeRoundedLogout02,
+              color: Colors.white,
+              size: 24.0,
+            ),
+            label: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Log Out'),
+                  content: const Text('Are you sure you want to log out?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Logged out successfully!')),
+                        );
+                      },
+                      child: const Text('Log Out',
+                          style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}

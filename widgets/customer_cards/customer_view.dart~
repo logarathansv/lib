@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../lib_latest/utils/get_customer_details.dart';
+import '../../screens/chat/chat_screen.dart';
+
+class CustomerCard extends StatelessWidget {
+  final Customer customer;
+
+  CustomerCard({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Card(
+          elevation: 4.0, // Provides a subtle shadow effect
+          margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Adds margin around the card
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Padding(
+              padding: EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, // Aligns text to the start
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  customer.name,
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8.0),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    customer.address,
+                                    style: TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.grey,
+                                    ),
+                                    overflow: TextOverflow.ellipsis, // Add ellipsis for overflow
+                                    maxLines: 1, // Optional: Restrict to one line
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Column(
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: Size(10, 10),
+                                        padding: EdgeInsets.all(5), // Set padding for smaller button
+                                      ),
+                                      onPressed: () async {
+                                        final Uri url = Uri(scheme: 'tel', path: customer.phoneNumber);
+                                        if (await canLaunchUrl(url)) {
+                                          await launchUrl(url);
+                                        } else {
+                                          // Handle the error gracefully (e.g., show a dialog or a snackbar)
+                                          print('Could not launch the phone dialer');
+                                        }
+                                      },
+                                      child: Icon(
+                                        Icons.call_rounded,
+                                        size: 22,
+                                        color: Color(0xFF028F83),
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: Size(10, 10),
+                                        padding: EdgeInsets.all(5),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> ChatScreen()));
+                                      },
+                                      child: Icon(
+                                        Icons.chat_outlined,
+                                        size: 22,
+                                        color: Color(0xFF028F83),
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: Size(10, 10),
+                                        padding: EdgeInsets.all(5),
+                                      ),
+                                      onPressed: () {
+                                        print("WhatsApp Opens");
+                                      },
+                                      child: HugeIcon(
+                                        icon: HugeIcons.strokeRoundedWhatsapp,
+                                        color: Color(0xFF028F83),
+                                        size: 24.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 8,
+          child: Container(
+            width: 40, // Width of the ribbon
+            height: 20, // Height of the ribbon
+            decoration: BoxDecoration(
+              color: customer.labelColor, // Use the customer's label color
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10), // Optional for a rounded effect
+                bottomRight: Radius.circular(10), // Optional for a rounded effect
+              ),
+            ),
+
+          ),
+        ),
+      ],
+    );
+  }
+}
