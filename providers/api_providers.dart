@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/client.dart';
-import '../api/service_service.dart';
-import '../api/product_service.dart';
-import '../api/post_service.dart';
+import '../api/business_main/service_service.dart';
+import '../api/business_main/product_service.dart';
+import '../api/business_main/post_service.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 

@@ -112,12 +112,31 @@ class _PersonalCareBusinessPageState
       ChatScreen(),
       const SettingsPage(),
     ];
+    _startTokenExpiryTimer();
   }
 
   @override
   void dispose() {
     _tokenExpiryTimer?.cancel();
     super.dispose();
+  }
+
+  void _startTokenExpiryTimer() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token != null && token.isNotEmpty) {
+      try {
+        // Skip expiration check since the token doesn't have an `exp` field
+        var isTokenValid = true;
+      } catch (e) {
+        print('Error decoding token: $e');
+        await prefs.remove('auth_token');
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      }
+    }
   }
 
   @override
