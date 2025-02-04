@@ -1,126 +1,117 @@
+import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
-import 'chat_detail_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/chat_model/chat_message.dart';
+import '../../providers/chat_provider.dart';
+import '../../utils/socket/socket_service.dart';
 
-class ChatScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> ongoingChats = [
-    {
-      'name': 'Alice',
-      'lastMessage': 'Can you confirm my booking?',
-      'time': '10:30 AM'
-    },
-    {
-      'name': 'Bob',
-      'lastMessage': 'I have a few questions.',
-      'time': 'Yesterday'
-    },
-  ];
+class ChatScreen extends ConsumerStatefulWidget {
+  final String currentUserId;
+  final String receiverId;
+  final String receiverName;
 
-  final List<Map<String, dynamic>> previousChats = [
-    {
-      'name': 'Eve',
-      'lastMessage': 'Thank you for your service!',
-      'time': 'Last Week'
-    },
-    {
-      'name': 'John',
-      'lastMessage': 'Order completed successfully.',
-      'time': '2 weeks ago'
-    },
-  ];
+  ChatScreen({
+    required this.currentUserId,
+    required this.receiverId,
+    required this.receiverName,
+  });
+
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends ConsumerState<ChatScreen> {
+  List<ChatMessage> messages = [];
+  String senderName = '';
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChatHistory(); // Load history first
+    _initializeSocketListener(); // Then listen for new messages
+  }
+
+  /// Load chat history from Riverpod provider
+  Future<void> _loadChatHistory() async {
+    try {
+      final chatAsync = await ref.read(chatProvider(widget.receiverId).future);
+      setState(() {
+        messages = chatAsync.map((message) {
+          return ChatMessage(
+            text: message.content,
+            user: ChatUser(id: message.sender),
+            createdAt: message.timestamp,
+          );
+        }).toList();
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading chat history: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  /// Set up socket listener for real-time messages
+  void _initializeSocketListener() {
+    final socket = SocketService().socket;
+
+    socket.on('receiveMessage', (data) {
+      final newMessage = Message.fromJson(data);
+
+      if ((newMessage.sender == widget.currentUserId && newMessage.receiver == widget.receiverId) ||
+          (newMessage.receiver == widget.currentUserId && newMessage.sender == widget.receiverId)) {
+        setState(() {
+          messages.insert(
+            0,
+            ChatMessage(
+              text: newMessage.content,
+              user: ChatUser(id: newMessage.sender),
+              createdAt: newMessage.timestamp,
+            ),
+          );
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    final socket = SocketService().socket;
+    socket.off('receiveMessage'); // Remove listener to prevent memory leaks
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final socket = SocketService().socket;
+
     return Scaffold(
       appBar: AppBar(
-        title: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: 'Chat to Customers', // The unstyled part
-                style: TextStyle(
-                  fontSize: 20,
-                  fontFamily: 'Parkinsans',
-                  fontWeight: FontWeight.bold,
-                  color: Color.fromRGBO(47, 72, 88, 1),
-
-                ),
-              ),
-            ],
-          ),
-        ),
+        title: Text('Person ${widget.receiverName}'),
       ),
-      body: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            Container(
-              color: Color(0xFF028F83),
-              child: TabBar(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : DashChat(
+        currentUser: ChatUser(id: widget.currentUserId),
+        onSend: (ChatMessage newMessage) {
+          socket.emit('message', {
+            'senderId': widget.currentUserId,
+            'receiverId': widget.receiverId,
+            'senderName': senderName,
+            'receiverName': widget.receiverName,
+            'content': newMessage.text,
+          });
 
-                indicatorColor: Colors.white,
-                tabs: [
-                  Tab(
-                    child: Text(
-                        'Ongoing',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white
-                        )
-                    ),
-                  ),
-                  Tab(
-                    child: Text(
-                        'Previous',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white
-                        )
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _buildChatList(context, ongoingChats),
-                  _buildChatList(context, previousChats),
-                ],
-              ),
-            ),
-          ],
-        ),
-      )
-    );
-  }
-
-  Widget _buildChatList(
-      BuildContext context, List<Map<String, dynamic>> chats) {
-    return ListView.builder(
-      itemCount: chats.length,
-      itemBuilder: (context, index) {
-        final chat = chats[index];
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Color(0xfff4c345),
-            child: Text(chat['name'][0], style: TextStyle(color: Colors.white)),
-          ),
-          title: Text(chat['name']),
-          subtitle: Text(chat['lastMessage']),
-          trailing: Text(chat['time'], style: TextStyle(color: Colors.grey)),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    ChatDetailScreen(customerName: chat['name']),
-              ),
-            );
-          },
-        );
-      },
+          setState(() {
+            messages.insert(0, newMessage);
+          });
+        },
+        messages: messages,
+        inputOptions: InputOptions(alwaysShowSend: true),
+      ),
     );
   }
 }

@@ -1,56 +1,207 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:sklyit_business/LoginPage.dart';
-import 'package:sklyit_business/auth/auth_provider.dart';
-import 'screens/business_perspective.dart';
+import 'package:sklyit_business/screens/auth/LoginPage.dart';
+import 'package:sklyit_business/screens/chat/chat_dashboard.dart';
+import 'package:sklyit_business/utils/socket/socket_service.dart';
+import 'api/check_refresh.dart';
+import 'screens/business_view/business_perspective.dart';
 import 'screens/chat/chat_screen.dart';
-import 'screens/ledger/add_contact.dart';
 import 'screens/tools/tools_screen.dart';
 import 'screens/settings/settings_page.dart';
 import 'widgets/notifications/notifications.dart';
-import 'data/business_provider.dart';
-import 'preloaderscreen.dart'; // Import the PreloaderScreen
+import 'screens/preloaderscreen.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+String uid = '';
+final storage = FlutterSecureStorage();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('auth_token'); // Retrieve the token
+  if (Platform.isAndroid && (await _checkNotificationPermission())) {
+    runApp(
+      ProviderScope(
+        child: SklyitApp(),
+      ),
+    );
+  }
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+}
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('Handling a background message: ${message.messageId}');
+}
+Future<bool> _checkNotificationPermission() async {
+  if (Platform.isAndroid) {
+    final PermissionStatus status = await Permission.notification.status;
+    if (status.isDenied) {
+      // Request permission
+      final PermissionStatus newStatus = await Permission.notification.request();
+      return newStatus.isGranted;
+    }
+    return status.isGranted;
+  }
+  return true; // Assume granted for other platforms
+}
 
-  bool isTokenValid = false;
-  if (token != null && token.isNotEmpty) {
-    try {
-      // Check if the token is a valid JWT format
-      if (token.split('.').length == 3) {
-        // Skip expiration check since the token doesn't have an `exp` field
-        isTokenValid = true;
-      } else {
-        print('Invalid JWT token format');
-        await prefs.remove('auth_token'); // Clear the invalid token
-      }
-    } catch (e) {
-      print('Error decoding token: $e');
-      await prefs.remove('auth_token'); // Clear the invalid token
+class SklyitApp extends StatefulWidget  {
+  @override
+  State<SklyitApp> createState() => _SklyitAppState();
+}
+
+class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
+  bool logged = false;
+
+  bool isValidRefresh = false;
+
+  bool _isDialogOpen = false;
+
+  String? rtoken = '';
+
+  bool isValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(seconds: 5));
+    WidgetsBinding.instance.addObserver(this);
+    initialization();
+    _checkInternetOnStart();
+    _listenForInternetChanges();
+  }
+
+  Future<void> _checkInternetOnStart() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      _showNoInternetDialog();
     }
   }
 
-  runApp(
-    ProviderScope(
-      child: SklyitApp(token: isTokenValid ? token : null), // Pass valid token
-    ),
-  );
-}
+  void _listenForInternetChanges() {
+    Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      if (results.isNotEmpty && results.first == ConnectivityResult.none && !_isDialogOpen) {
+        _showNoInternetDialog();
+      } else if (results.isNotEmpty && results.first != ConnectivityResult.none && _isDialogOpen) {
+        Navigator.pop(context); // Close the dialog if internet is restored
+        _isDialogOpen = false;
+      }
+    });
+  }
 
-class SklyitApp extends StatelessWidget {
-  final String? token;
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
 
-  const SklyitApp({super.key, this.token});
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isDialogOpen) {
+      _showNoInternetDialog(); // Re-show the dialog if the app is resumed
+    }
+  }
+
+  void _showNoInternetDialog() {
+    setState(() {
+      _isDialogOpen = true;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent users from dismissing dialog by tapping outside
+      builder: (context) => WillPopScope(
+        // Prevent dialog from closing on back button press
+        onWillPop: () async => false, // Always return false to block back button
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Column(
+            children: [
+              Icon(Icons.wifi_off, color: Colors.red, size: 50),
+              SizedBox(height: 10),
+              Text(
+                "No Internet Connection",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          content: Text(
+            "Please check your internet connection and try again.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            // Exit Button
+            TextButton(
+              onPressed: () => exit(0), // Close the app
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              ),
+              child: Text(
+                "Exit",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+            // Refresh Button
+            ElevatedButton(
+              onPressed: () async {
+                var connectivityResult = await Connectivity().checkConnectivity();
+                if (connectivityResult != ConnectivityResult.none) {
+                  // Internet is back
+                  Navigator.pop(context); // Close the dialog
+                  setState(() {
+                    _isDialogOpen = false;
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("No internet connection found!"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              ),
+              child: Text(
+                "Refresh",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void initialization() async {
+    await verifyLogin();
+    (logged) ? {uid = (await storage.read(key: 'userId'))!, SocketService().initialize(uid)} : null;
+  }
+
+  Future<void> verifyLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    rtoken = await storage.read(key: 'rtoken');
+    isValidRefresh =  (rtoken != null) ? await CheckRefreshValid().isRefreshValid() : false;
+    setState(() {
+      logged = prefs.getBool("is_logged") ?? false;
+      isValid = isValidRefresh;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,9 +223,8 @@ class SklyitApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const PreloaderScreen(), // Show the PreloaderScreen first
+      home: (isValid && logged) ? PersonalCareBusinessPage() : LoginPage(), // Show the PreloaderScreen first
       routes: {
-        '/addContactPage': (context) => const AddContactPage(),
         '/home': (context) => const PersonalCareBusinessPage(),
         '/login': (context) => LoginPage(),
       },
@@ -108,8 +258,9 @@ class _PersonalCareBusinessPageState
     _pages = [
       ShowToolsPage(),
       NotificationsPage(),
-      BusinessPerspective(),
-      ChatScreen(),
+      Center(child: Text('Under Construction')),
+      // BusinessPerspective(),
+      ChatDashboard(uid: uid),
       const SettingsPage(),
     ];
   }

@@ -31,7 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             TextSpan(
-              text: 'Professional ', // The styled part
+              text: 'Business ', // The styled part
               style: TextStyle(
                 fontSize: 20,
                 fontFamily: 'Parkinsans',

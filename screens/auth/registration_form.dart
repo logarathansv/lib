@@ -27,7 +27,7 @@ class _AdminRegistrationFormState extends State<AdminRegistrationForm> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const SklyitApp(),
+          builder: (context) => SklyitApp(),
         ),
       );
     }

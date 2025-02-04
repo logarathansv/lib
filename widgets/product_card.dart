@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import '../models/business_main/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:sklyit_business/auth/auth_provider.dart';
-import '../api/client.dart';
-import '../providers/api_providers.dart';
-import '../widgets/product_section.dart';
+import 'package:sklyit_business/providers/auth_provider.dart';
+import '../../api/client.dart';
+import '../../providers/business_main.dart';
+import '../../widgets/product_section.dart';
 import 'customer_perspective.dart';
 import '/services/services_section.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/business_provider.dart';
+import '../../providers/business_provider.dart';
 
 class BusinessPerspective extends ConsumerStatefulWidget {
   const BusinessPerspective({super.key});

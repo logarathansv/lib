@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sklyit_business/LoginPage.dart';
-import 'package:sklyit_business/auth/auth_provider.dart';
+import 'package:sklyit_business/screens/auth/LoginPage.dart';
+import 'package:sklyit_business/providers/auth_provider.dart';
 import 'package:sklyit_business/main.dart';
-import 'package:sklyit_business/screens/business_perspective.dart';
+import 'package:sklyit_business/screens/business_view/business_perspective.dart';
 
 class PreloaderScreen extends ConsumerStatefulWidget {
   const PreloaderScreen({super.key});

@@ -8,7 +8,6 @@ import '../../models/data.dart';
 import '../booking_management/booking_list.dart';
 import '../crm/crm_main.dart';
 import '../inventory/inventory_page.dart';
-import '../ledger.dart';
 import '../orders/orders_list.dart';
 import '../customers/customer_list.dart';
 import '../promotions/promotions_selection.dart';
@@ -24,7 +23,6 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
   final List<String> _iconname = [
     "Customers",
     "Orders",
-    "Credit",
     "Bookings",
     "Promotions",
     "CRM",
@@ -39,11 +37,6 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
     const HugeIcon(
       icon: HugeIcons.strokeRoundedShoppingBasket01,
       color: Colors.deepOrangeAccent,
-      size: 24.0,
-    ),
-    const HugeIcon(
-      icon: HugeIcons.strokeRoundedSaveMoneyDollar,
-      color: Colors.green,
       size: 24.0,
     ),
     const HugeIcon(
@@ -70,14 +63,6 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
   final List<Widget> _pages = [
     AddCustomerPage(),
     AddOrdersPage(),
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<DataModel>(
-          create: (_) => DataModel(),
-        ),
-      ],
-      child: const LedgerPage(),
-    ),
     BookingPage(),
     PromotionsPage(),
     CRMPage(),
