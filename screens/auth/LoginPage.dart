@@ -1,203 +1,155 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:sklyit_business/auth/auth_provider.dart';
+import '../../api/auth_api/login_api.dart';
+import '../../main.dart';
+
+bool _wrongEmail = false;
+bool _wrongPassword = false;
 
 class LoginPage extends ConsumerStatefulWidget {
-  static String id = '/LoginPage';
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage> {
-  String email = '';
-  String password = '';
-
-  bool _wrongEmail = false;
-  bool _wrongPassword = false;
-
-  String emailText = 'Email doesn\'t match';
-  String passwordText = 'Password doesn\'t match';
-
-  bool _isLoading = false;
+class _LoginScreenState extends ConsumerState<LoginPage> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final storage = FlutterSecureStorage();
 
   Future<void> _login() async {
-    if (email.isEmpty || !email.contains('@')) {
-      setState(() {
-        _wrongEmail = true;
-      });
-      return;
-    }
+    final loginService = ref.read(loginApiProvider);
+    final res = await loginService.login(
+      usernameController.text,
+      passwordController.text,
+    );
+    print('Login response: $res'); // Debugging
 
-    if (password.isEmpty || password.length < 6) {
-      setState(() {
-        _wrongPassword = true;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final Dio dio = Dio();
-
-      final response = await dio.post(
-        'http://192.168.77.41:3000/bs/auth/login',
-        data: {'email': email, 'password': password},
-      );
-
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.data}');
-      final storage = FlutterSecureStorage();
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final token = response.data['accessToken'];
-        final refreshToken = response.data['refreshToken'];
-
-        print('Token received: $token');
-
-        await storage.write(key: 'token', value: token);
-        await storage.write(key: 'rtoken', value: refreshToken);
-
-        ref.read(authTokenProvider.notifier).state = token;
-
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
-      } else {
-        setState(() {
-          _wrongEmail = true;
-          _wrongPassword = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: Invalid email or password')),
-        );
-      }
-    } catch (e) {
-      print('Error during login: $e');
+    if (res == 'Login successful') {
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SklyitApp()), (route) => false);
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${e.toString()}')),
+        SnackBar(content: Text(res), backgroundColor: Colors.redAccent,),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    String emailText = 'Email doesn\'t match';
+    String passwordText = 'Password doesn\'t match';
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: Image.asset('assets/images/background.png'),
-          ),
-          Padding(
-            padding: EdgeInsets.only(
-                top: 60.0, bottom: 20.0, left: 20.0, right: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: SafeArea(child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Icon(
+                  Icons.person,
+                  size: 80.0,
+                  color: Colors.amber,
+                ),
+                SizedBox(height: 10.0),
                 Text(
                   'Login',
-                  style: TextStyle(fontSize: 50.0),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back,',
-                      style: TextStyle(fontSize: 30.0),
-                    ),
-                    Text(
-                      'please login',
-                      style: TextStyle(fontSize: 30.0),
-                    ),
-                    Text(
-                      'to your account',
-                      style: TextStyle(fontSize: 30.0),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    TextField(
-                      keyboardType: TextInputType.emailAddress,
-                      onChanged: (value) {
-                        setState(() {
-                          email = value;
-                          _wrongEmail = false;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                        labelText: 'Email',
-                        errorText: _wrongEmail ? emailText : null,
-                      ),
-                    ),
-                    SizedBox(height: 20.0),
-                    TextField(
-                      obscureText: true,
-                      keyboardType: TextInputType.visiblePassword,
-                      onChanged: (value) {
-                        setState(() {
-                          password = value;
-                          _wrongPassword = false;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        labelText: 'Password',
-                        errorText: _wrongPassword ? passwordText : null,
-                      ),
-                    ),
-                    SizedBox(height: 10.0),
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          print('Forgot Password tapped');
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(fontSize: 20.0, color: Colors.blue),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xff447def),
-                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                  style: TextStyle(
+                    fontSize: 50.0,
+                    color: Colors.teal.shade700,
+                    fontWeight: FontWeight.bold,
                   ),
-                  onPressed: _isLoading ? null : _login,
-                  child: _isLoading
-                      ? CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : Text(
-                          'Login',
-                          style: TextStyle(fontSize: 25.0, color: Colors.white),
-                        ),
+                ),
+                Text(
+                  'Welcome back,\nplease login to your account',
+                  style: TextStyle(
+                    fontSize: 25.0,
+                    color: Colors.teal.shade700,
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            Column(
+              children: [
+                TextField(
+                  controller: usernameController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: 'Email',
+                    labelText: 'Email',
+                    errorText: _wrongEmail ? emailText : null,
+                    prefixIcon: Icon(Icons.email, color: Colors.amber),
+                  ),
+                ),
+                SizedBox(height: 20.0),
+                TextField(
+                  obscureText: true,
+                  controller: passwordController,
+                  keyboardType: TextInputType.visiblePassword,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    labelText: 'Password',
+                    errorText: _wrongPassword ? passwordText : null,
+                    prefixIcon: Icon(Icons.lock, color: Colors.amber),
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      print('Forgot Password tapped');
+                    },
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(fontSize: 18.0, color: Colors.teal),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                padding: EdgeInsets.symmetric(vertical: 15.0),
+              ),
+              onPressed: _login,
+              child: Text(
+                'Login',
+                style: TextStyle(fontSize: 20.0, color: Colors.white),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Don\'t have an account?',
+                  style: TextStyle(fontSize: 18.0, color: Colors.black),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => RegisterPage(onLogout: widget.onLogout, key: widget.registerPageKey,)),
+                    // );
+                  },
+                  child: Text(
+                    ' Sign Up',
+                    style: TextStyle(fontSize: 18.0, color: Colors.teal),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
       ),
     );
   }

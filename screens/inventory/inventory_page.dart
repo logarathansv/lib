@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import '../../models/add_product_dialog.dart';
-import '../../models/product.dart';
+import '../../utils/add_product_dialog.dart';
+import '../../models/business_main/product.dart';
 import '../../widgets/product_card.dart';
 
 class InventoryPage extends StatefulWidget {

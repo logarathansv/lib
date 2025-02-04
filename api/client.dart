@@ -2,10 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sklyit_business/api/refresh_api.dart';
 
+import 'endpoints.dart';
+
 class ApiClient {
   final Dio dio;
 
-  ApiClient() : dio = Dio(BaseOptions(baseUrl: 'http://192.168.77.41:3000')) {
+  ApiClient() : dio = Dio(BaseOptions(baseUrl: '${Endpoints.BASEURL}')) {
     _init();
   }
 

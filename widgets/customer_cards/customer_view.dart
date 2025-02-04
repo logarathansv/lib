@@ -68,12 +68,12 @@ class CustomerCard extends StatelessWidget {
                     // Chat Icon
                     IconButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatScreen(),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => ChatScreen(currentUserId: , receiverId: , receiverName: ,),
+                        //   ),
+                        // );
                       },
                       icon: const Icon(
                         Icons.chat_outlined,

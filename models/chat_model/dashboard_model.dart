@@ -5,6 +5,6 @@ class ChatDashboard{
   ChatDashboard({required this.userId, required this.name});
 
   factory ChatDashboard.fromJson(Map<String, dynamic> json) {
-    return ChatDashboard(userId: json['userId'], name: json['name']);
+    return ChatDashboard(userId: json['userId'].toString(), name: json['name']);
   }
 }

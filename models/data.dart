@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/ledger.dart';
+// import '../screens/ledger.dart';
 import '../widgets/ledger/tab.dart';
 
 enum SwitchType {
@@ -10,7 +10,7 @@ enum SwitchType {
 
 class DataModel with ChangeNotifier {
   final List<Widget> _navigationOptions = [
-    const LedgerPage(),
+    // const LedgerPage(),
   ];
 
   List<Widget> get navigationOptions => _navigationOptions;

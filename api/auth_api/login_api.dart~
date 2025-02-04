@@ -28,7 +28,7 @@ class LoginAPIService {
         await storage.write(key: 'token', value: response.data['token']);
         await storage.write(key: 'rtoken', value: response.data['rtoken']);
         Map<String, dynamic> decodedToken = JwtDecoder.decode(response.data['rtoken']);
-        final uid = decodedToken['sub'].toString();
+        final uid = decodedToken['sub'];
         await storage.write(key: 'userId', value: uid);
         await ref.read(chatApiProvider).saveAndSendToken(uid);
         SocketService().initialize(uid);
