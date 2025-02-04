@@ -6,7 +6,11 @@ class Endpoints {
   //Business Main Page
   static const String getPosts = '/bs/posts';
   static const String getServices = '/bs/services';
-  static const String getProducts = '/bs/products';
+  // static const String getProducts = '/bs/products';
 
   static const String refresh_token = '/bs/auth/refresh';
+
+  //Inventory Management
+  static const String getProducts='/bs/product';
+  static const String editInventory='/bs/products';
 }
