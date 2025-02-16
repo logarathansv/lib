@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:sklyit_business/models/order_model/order_class.dart';
+import 'package:sklyit_business/models/order_model/order_model.dart';
 import 'package:sklyit_business/models/order_model/services_class.dart';
 import '../../models/customer_model/customer_class.dart';
-import '../../models/product_model/product_class.dart';
+import '../../models/product_model/product_model.dart';
 
 class ConfirmOrderPage extends StatefulWidget {
   final List<Service> selectedServices;
@@ -182,18 +182,18 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       // Create a new order
-      final newOrder = Order(
-        services: widget.selectedServices.map((e) => e.name).toList(),
-        products: widget.selectedProducts
-            .map((e) => {'name': e.name, 'quantity': e.quantity})
-            .toList(),
-        customerName: _customerNameController.text,
-        amount: double.parse(_amountController.text),
-        date_time: widget.selectedDate,
-      );
+      // final newOrder = Order(
+      //   services: widget.selectedServices.map((e) => e.name).toList(),
+      //   products: widget.selectedProducts
+      //       .map((e) => {'name': e.name, 'quantity': e.quantity})
+      //       .toList(),
+      //   customerName: _customerNameController.text,
+      //   amount: double.parse(_amountController.text),
+      //   date_time: widget.selectedDate,
+      // );
 
       // Return the new order to the previous page
-      Navigator.of(context).pop(newOrder);
+      // Navigator.of(context).pop(newOrder);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),

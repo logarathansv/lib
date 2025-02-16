@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../models/business_main/product.dart';
+import '../models/product_model/product_model.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -36,9 +36,7 @@ class ProductCard extends StatelessWidget {
                   bottomLeft: Radius.circular(12),
                 ),
                 image: DecorationImage(
-                  image: product.imageUrl.startsWith('http')
-                      ? CachedNetworkImageProvider(product.imageUrl)
-                      : FileImage(File(product.imageUrl)) as ImageProvider,
+                  image: CachedNetworkImageProvider(product.imageUrl ?? 'https://via.placeholder.com/300') as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -63,7 +61,7 @@ class ProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     // Product Description
                     Text(
-                      product.description,
+                      product.description!,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[700],
@@ -77,7 +75,7 @@ class ProductCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          '\₹${product.price}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

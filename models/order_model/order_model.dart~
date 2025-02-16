@@ -60,12 +60,15 @@ class CreateOrder{
   final int customerId;
   final List<Map<String, dynamic>> services;
   final List<Map<String, dynamic>> products;
-
+  final String servicesCost;
+  final String totalAmount;
 
   CreateOrder({
   required this.customerId,
   required this.services,
-  required this.products
+  required this.products,
+  required this.servicesCost,
+  required this.totalAmount,
   });
 
   Map<String, dynamic> toJson() {

@@ -24,12 +24,12 @@ class OrderService{
     }
   }
 
-  Future<void> addOrder(CreateOrder order) async{
+  Future<void> addOrder(Order order) async{
 
     try{
       final response = await _dio.post(
           Endpoints.editOrder,
-          data:order.toJson()
+          data:
       );
       if(response.statusCode == 201){
         print('Order created successfully!');

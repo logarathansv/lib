@@ -113,11 +113,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   color: Color(0xFF028F83)),
             ),
             const SizedBox(height: 8),
-            // for (String service in widget.order.services)
-            //   Text(
-            //     '- $service: \$${_getServiceAmount(service)}',
-            //     style: const TextStyle(color: Color(0xFF2f4757)),
-            //   ),
+            for (String service in widget.order.services)
+              Text(
+                '- $service: \$${_getServiceAmount(service)}',
+                style: const TextStyle(color: Color(0xFF2f4757)),
+              ),
 
             const SizedBox(height: 20),
 
@@ -139,41 +139,41 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             const SizedBox(height: 20),
 
             // Total Amount
-            // _buildDetailRow(
-            //     'Total Amount:', '\$${widget.order.amount.toStringAsFixed(2)}'),
-            // const SizedBox(height: 30),
+            _buildDetailRow(
+                'Total Amount:', '\$${widget.order.amount.toStringAsFixed(2)}'),
+            const SizedBox(height: 30),
 
             // Generate Invoice Button
-            // ElevatedButton(
-            //   onPressed: () {
-            //     setState(() {
-            //       _pdfDataFuture = generateInvoicePdf(
-            //         shopName: 'Super Shop',
-            //         shopAddress: '123 Main Street, Cityville',
-            //         phoneNumber: '+91 9876543210',
-            //         emailAddress: 'shop@example.com',
-            //         invoiceNumber: 'INV-12345',
-            //         dateTime: DateTime.now(),
-            //         customerName: widget.order.customerName,
-            //         customerAddress: '456 Elm Street, Townsville',
-            //         customerPhone: '+91 9988776655',
-            //         customerEmail: 'johndoe@example.com',
-            //         // orderDetails: [
-            //         //   ...widget.order.services.map((service) => {
-            //         //         'serviceName': service,
-            //         //         'cost': _getServiceAmount(service),
-            //         //       }),
-            //         //   ...widget.order.products.map((product) => {
-            //         //         'serviceName': product['name'],
-            //         //         'cost': product['quantity'] * 100.0, // Example cost
-            //         //       }),
-            //         // ],
-            //         // totalAmount: widget.order.amount,
-            //       );
-            //     });
-            //   },
-            //   child: const Text('Generate Invoice'),
-            // ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _pdfDataFuture = generateInvoicePdf(
+                    shopName: 'Super Shop',
+                    shopAddress: '123 Main Street, Cityville',
+                    phoneNumber: '+91 9876543210',
+                    emailAddress: 'shop@example.com',
+                    invoiceNumber: 'INV-12345',
+                    dateTime: DateTime.now(),
+                    customerName: widget.order.customerName,
+                    customerAddress: '456 Elm Street, Townsville',
+                    customerPhone: '+91 9988776655',
+                    customerEmail: 'johndoe@example.com',
+                    orderDetails: [
+                      ...widget.order.services.map((service) => {
+                            'serviceName': service,
+                            'cost': _getServiceAmount(service),
+                          }),
+                      ...widget.order.products.map((product) => {
+                            'serviceName': product['name'],
+                            'cost': product['quantity'] * 100.0, // Example cost
+                          }),
+                    ],
+                    totalAmount: widget.order.amount,
+                  );
+                });
+              },
+              child: const Text('Generate Invoice'),
+            ),
             const SizedBox(height: 20),
             FutureBuilder<Uint8List>(
               future: _pdfDataFuture,

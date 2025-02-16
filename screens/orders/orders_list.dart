@@ -3,8 +3,8 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/models/order_model/services_class.dart';
 import 'package:sklyit_business/screens/orders/add_orders_page.dart';
 import '../../models/customer_model/customer_class.dart';
-import '../../models/order_model/order_class.dart';
-import '../../models/product_model/product_class.dart'; // Import the Product class
+import '../../models/order_model/order_model.dart';
+import '../../models/product_model/product_model.dart'; // Import the Product class
 import 'order_details.dart';
 
 class AddOrdersPage extends StatefulWidget {
@@ -18,34 +18,7 @@ class AddOrdersPage extends StatefulWidget {
 
 class _AddOrdersPageState extends State<AddOrdersPage> {
   // Sample orders data
-  final List<Order> orders = [
-    Order(
-      services: ['Plumbing', 'Electrical', 'Tailoring', 'Cleaning'],
-      products: [
-        {'name': 'Product A', 'quantity': 2},
-        {'name': 'Product B', 'quantity': 1},
-      ],
-      customerName: 'John Doe',
-      amount: 3000,
-      date_time: DateTime(2023, 7, 16, 11, 30),
-    ),
-    Order(
-      services: ['Electrical'],
-      products: [
-        {'name': 'Product C', 'quantity': 3},
-      ],
-      customerName: 'Jane Smith',
-      amount: 1500,
-      date_time: DateTime(2023, 7, 15, 14, 45),
-    ),
-    Order(
-      services: ['Cleaning'],
-      products: [],
-      customerName: 'Emily Johnson',
-      amount: 800,
-      date_time: DateTime(2023, 7, 14, 9, 15),
-    ),
-  ];
+  final List<Order> orders = [];
 
   final _searchController = TextEditingController();
   final List<Customer> _customers = [];
@@ -55,9 +28,9 @@ class _AddOrdersPageState extends State<AddOrdersPage> {
     Service(name: 'Service C'),
   ];
   final List<Product> _products = [
-    Product(name: 'Product A', price: 29.99),
-    Product(name: 'Product B', price: 49.99),
-    Product(name: 'Product C', price: 99.99),
+    // Product(name: 'Product A', price: 29.99,quantity: 2),
+    // Product(name: 'Product B', price: 49.99,quantity: 1),
+    // Product(name: 'Product C', price: 99.99,quantity: 3),
   ];
   List<Order> _searchResults = [];
   String _filterType = 'All'; // Default filter
@@ -270,45 +243,46 @@ class _AddOrdersPageState extends State<AddOrdersPage> {
 
   // Filter orders based on the selected filter type
   List<Order> _getFilteredOrders() {
-    switch (_filterType) {
-      case 'Recent':
-        return orders
-            .where((order) => order.date_time
-                .isAfter(DateTime.now().subtract(Duration(days: 7))))
-            .toList();
-      case 'Old':
-        return orders
-            .where((order) => order.date_time
-                .isBefore(DateTime.now().subtract(Duration(days: 7))))
-            .toList();
-      case 'Amount: Low to High':
-        return List.from(orders)..sort((a, b) => a.amount.compareTo(b.amount));
-      case 'Amount: High to Low':
-        return List.from(orders)..sort((a, b) => b.amount.compareTo(a.amount));
-      case 'Date: Oldest First':
-        return List.from(orders)
-          ..sort((a, b) => a.date_time.compareTo(b.date_time));
-      case 'Date: Newest First':
-        return List.from(orders)
-          ..sort((a, b) => b.date_time.compareTo(a.date_time));
-      default:
-        return orders;
-    }
+    return orders;
+    // switch (_filterType) {
+    //   case 'Recent':
+    //     return orders
+    //         .where((order) => order.date_time
+    //             .isAfter(DateTime.now().subtract(Duration(days: 7))))
+    //         .toList();
+    //   case 'Old':
+    //     return orders
+    //         .where((order) => order.date_time
+    //             .isBefore(DateTime.now().subtract(Duration(days: 7))))
+    //         .toList();
+    //   case 'Amount: Low to High':
+    //     return List.from(orders)..sort((a, b) => a.amount.compareTo(b.amount));
+    //   case 'Amount: High to Low':
+    //     return List.from(orders)..sort((a, b) => b.amount.compareTo(a.amount));
+    //   case 'Date: Oldest First':
+    //     return List.from(orders)
+    //       ..sort((a, b) => a.date_time.compareTo(b.date_time));
+    //   case 'Date: Newest First':
+    //     return List.from(orders)
+    //       ..sort((a, b) => b.date_time.compareTo(a.date_time));
+    //   default:
+    //     return orders;
+    // }
   }
 
   // Search orders
   void _searchOrders() {
     setState(() {
-      _searchResults = _getFilteredOrders()
-          .where((order) =>
-              order.customerName
-                  .toLowerCase()
-                  .contains(_searchController.text.toLowerCase()) ||
-              order.amount.toString().contains(_searchController.text) ||
-              order.date_time
-                  .toString()
-                  .contains(_searchController.text.toLowerCase()))
-          .toList();
+      _searchResults = _getFilteredOrders();
+          // .where((order) =>
+          //     order.customerName
+          //         .toLowerCase()
+          //         .contains(_searchController.text.toLowerCase()) ||
+          //     order.amount.toString().contains(_searchController.text) ||
+          //     order.date_time
+          //         .toString()
+          //         .contains(_searchController.text.toLowerCase()))
+          // .toList();
     });
   }
 
@@ -329,23 +303,23 @@ class _AddOrdersPageState extends State<AddOrdersPage> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      order.services.first,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2f4757),
-                      ),
-                    ),
-                    if (order.services.length > 1)
-                      Text(
-                        ' and ${order.services.length - 1} more',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2f4757),
-                        ),
-                      ),
+                    // Text(
+                    //   order.services.first,
+                    //   style: const TextStyle(
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.bold,
+                    //     color: Color(0xFF2f4757),
+                    //   ),
+                    // ),
+                    // if (order.services.length > 1)
+                    //   Text(
+                    //     ' and ${order.services.length - 1} more',
+                    //     style: const TextStyle(
+                    //       fontSize: 16,
+                    //       fontWeight: FontWeight.bold,
+                    //       color: Color(0xFF2f4757),
+                    //     ),
+                    //   ),
                   ],
                 ),
                 const SizedBox(height: 4),

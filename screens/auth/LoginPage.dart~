@@ -27,7 +27,7 @@ class _LoginScreenState extends ConsumerState<LoginPage> {
     );
     print('Login response: $res'); // Debugging
 
-    if (res == 'Login Successful') {
+    if (res == 'Login successful') {
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SklyitApp()), (route) => false);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

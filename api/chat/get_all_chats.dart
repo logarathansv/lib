@@ -12,7 +12,7 @@ class ChatGetAPIService {
   Future<List<Message>> fetchChats(String otherid) async{
     final uid = await storage.read(key: 'userId');
     final response = await _dio.get(
-        '${Endpoints.BASEURL}${Endpoints.message}/$uid/$otherid',
+        '${Endpoints.message}/$uid/$otherid',
     );
     print('got it');
     print(response.data);

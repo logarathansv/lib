@@ -27,6 +27,6 @@ class Endpoints {
   //Order Management
   static const String getOrders='/bs/orders';
   static const String editOrder='/bs/orders';
-  static const String deleteOrder='/bs/orders';
+  static const String deleteOrder='/bs/order';
 
 }

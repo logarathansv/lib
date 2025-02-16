@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/screens/customers/customer_details.dart';
-import 'package:sklyit_business/utils/get_customer_details/get_customer_details.dart';
+import 'package:sklyit_business/screens/customers/get_customer_details.dart';
 import '../../models/customer_model/customer_class.dart';
 import '../../widgets/customer_cards/customer_view.dart';
 
