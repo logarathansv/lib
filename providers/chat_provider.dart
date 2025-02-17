@@ -5,6 +5,8 @@ import '../api/chat/chat_api.dart';
 import '../api/chat/get_all_chats.dart';
 import '../models/chat_model/chat_message.dart';
 import '../models/chat_model/dashboard_model.dart';
+import 'package:dash_chat_2/dash_chat_2.dart';
+
 
 final chatFetchApiProvider = Provider<ChatGetAPIService>((ref) => ChatGetAPIService(ref.read(apiClientProvider).dio));
 final chatApiProvider = Provider<ChatAPIService>((ref) => ChatAPIService(ref.read(apiClientProvider).dio));

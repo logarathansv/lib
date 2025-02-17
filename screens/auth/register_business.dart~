@@ -152,11 +152,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
     if (_formKey.currentState!.validate()) {
       final data = {
         'Clientname': clientNameController.text,
-        'domainname': domainNameController.text+'.com',
+        'domainname': '${domainNameController.text}.com',
         'shopname': shopNameController.text,
         'shopdesc': shopDescController.text,
-        'shopemail': shopEmailController.text,
-        'shopmobile': shopMobileController.text,
         'shopOpenTime': shopOpenTimeController.text,
         'shopClosingTime': shopClosingTimeController.text,
         'addresses' : getFormattedAddresses(),
@@ -231,8 +229,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 buildDomainField(),
                 buildTextField("Shop Name", shopNameController),
                 buildTextField("Shop Description", shopDescController),
-                buildTextField("Shop Email", shopEmailController, keyboardType: TextInputType.emailAddress),
-                buildTextField("Shop Mobile", shopMobileController, keyboardType: TextInputType.phone),
                 buildTimePickerField("Opening Time (HH:mm)", shopOpenTimeController),
                 buildTimePickerField("Closing Time (HH:mm)", shopClosingTimeController),
                 Text(

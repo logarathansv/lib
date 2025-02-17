@@ -1,10 +1,14 @@
 class Endpoints {
-  static const String BASEURL = 'http://192.168.77.41:3000';
+  static const String BASEURL = 'http://192.168.244.41:3000';
 
   static const String users = '/users';
 
   static const String login = '/bs/auth/login';
-  static const String register = '/bs/auth/register';
+  static const String register = '/users/register';
+  static const String logout = '/bs/auth/logout';
+  static const String register_business = '/bs/register';
+
+  static const String check_domain = '/bs/domain';
 
   //Business Main Page
   static const String getPosts = '/bs/posts';

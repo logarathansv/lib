@@ -1,6 +1,7 @@
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../models/chat_model/chat_message.dart';
 import '../../providers/chat_provider.dart';
 import '../../utils/socket/socket_service.dart';
@@ -21,46 +22,29 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  List<ChatMessage> messages = [];
-  String senderName = '';
-  bool isLoading = true;
+  late SocketService socketService;
+  bool isSocketInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _loadChatHistory(); // Load history first
-    _initializeSocketListener(); // Then listen for new messages
+    socketService = SocketService();
   }
 
-  /// Load chat history from Riverpod provider
-  Future<void> _loadChatHistory() async {
-    try {
-      final chatAsync = await ref.read(chatProvider(widget.receiverId).future);
-      setState(() {
-        messages = chatAsync.map((message) {
-          return ChatMessage(
-            text: message.content,
-            user: ChatUser(id: message.sender),
-            createdAt: message.timestamp,
-          );
-        }).toList();
-        isLoading = false;
-      });
-    } catch (e) {
-      print("Error loading chat history: $e");
-      setState(() {
-        isLoading = false;
-      });
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initializeSocketListener(); // Initialize socket once
   }
 
-  /// Set up socket listener for real-time messages
   void _initializeSocketListener() {
-    final socket = SocketService().socket;
+    final socket = socketService.socket;
+
+    // Remove existing listener to prevent duplication
+    socket.off('receiveMessage');
 
     socket.on('receiveMessage', (data) {
       final newMessage = Message.fromJson(data);
-
       if ((newMessage.sender == widget.currentUserId && newMessage.receiver == widget.receiverId) ||
           (newMessage.receiver == widget.currentUserId && newMessage.sender == widget.receiverId)) {
         setState(() {
@@ -79,38 +63,64 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    final socket = SocketService().socket;
-    socket.off('receiveMessage'); // Remove listener to prevent memory leaks
+    socketService.socket.off('receiveMessage'); // Clean up socket listener
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final socket = SocketService().socket;
+    final senderNameAsync = ref.watch(nameProvider);
+    final chatAsync = ref.watch(chatProvider(widget.receiverId));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Person ${widget.receiverName}'),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            ref.invalidate(chatProvider(widget.receiverId)); // Reset messages when exiting
+          },
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft03,
+            color: Colors.black,
+          ),
+        ),
+        title: Text(widget.receiverName),
+        backgroundColor: Colors.white,
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : DashChat(
-        currentUser: ChatUser(id: widget.currentUserId),
-        onSend: (ChatMessage newMessage) {
-          socket.emit('message', {
-            'senderId': widget.currentUserId,
-            'receiverId': widget.receiverId,
-            'senderName': senderName,
-            'receiverName': widget.receiverName,
-            'content': newMessage.text,
-          });
+      body: senderNameAsync.when(
+        data: (senderName) {
+          return chatAsync.when(
+            data: (messages) {
+              return DashChat(
+                currentUser: ChatUser(id: widget.currentUserId),
+                onSend: (ChatMessage newMessage) {
+                  if (senderName.isEmpty) {
+                    print("Sender name not loaded yet!");
+                    return;
+                  }
 
-          setState(() {
-            messages.insert(0, newMessage);
-          });
+                  socketService.socket.emit('message', {
+                    'senderId': widget.currentUserId,
+                    'receiverId': widget.receiverId,
+                    "senderName": senderName,
+                    "receiverName": widget.receiverName,
+                    'content': newMessage.text,
+                  });
+
+                  ref.read(chatProviders(widget.receiverId).notifier).addMessage(newMessage);
+                },
+                messages: messages,
+                inputOptions: InputOptions(
+                  alwaysShowSend: true,
+                ),
+              );
+            },
+            loading: () => Center(child: CircularProgressIndicator()),
+            error: (e, st) => Center(child: Text('Error fetching messages: $e')),
+          );
         },
-        messages: messages,
-        inputOptions: InputOptions(alwaysShowSend: true),
+        loading: () => Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text('Error fetching name: $e')),
       ),
     );
   }

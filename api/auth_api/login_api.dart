@@ -33,10 +33,10 @@ class LoginAPIService {
         await ref.read(chatApiProvider).saveAndSendToken(uid);
         SocketService().initialize(uid);
         print("socket service initialized for ${decodedToken['sub']}");
+        return 'Login successful';
       }
       print(response.data);
-      return response.data['message'];
-
+      return 'Failed to login';
     } on DioException catch (error) {
       if (error.response != null) {
         return error.response!.data['message'] ??

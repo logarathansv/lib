@@ -13,10 +13,12 @@ class ApiClient {
 
   Future<void> _init() async {
     final storage = FlutterSecureStorage();
-    await RefreshAPIService(dio).isAccessValid();
     String? token = await storage.read(key: 'token');
+
     if (token != null) {
       dio.options.headers['Authorization'] = 'Bearer $token';
     }
+    await RefreshAPIService(dio).isAccessValid();
   }
+
 }
