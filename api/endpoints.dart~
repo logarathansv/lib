@@ -1,14 +1,10 @@
 class Endpoints {
-  static const String BASEURL = 'http://192.168.77.41:3000';
+  static const String BASEURL = 'http://192.168.255.85:3000';
 
   static const String users = '/users';
 
   static const String login = '/bs/auth/login';
-  static const String register = '/users/register';
-  static const String logout = '/bs/auth/logout';
-  static const String register_business = '/bs/register';
-
-  static const String check_domain = '/bs/domain';
+  static const String register = '/bs/auth/register';
 
   //Business Main Page
   static const String getPosts = '/bs/posts';
@@ -31,6 +27,6 @@ class Endpoints {
   //Order Management
   static const String getOrders='/bs/orders';
   static const String editOrder='/bs/orders';
-  static const String deleteOrder='/bs/orders';
+  static const String deleteOrder='/bs/order';
 
 }

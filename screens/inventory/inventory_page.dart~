@@ -82,49 +82,34 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
   void _deleteProduct(int index) async {
     final product = products[index]; // Get the product to delete
-    ref.watch(productApiProvider).when(
-      data: (productService) async {
-        try {
-          await productService.deleteProduct(product.id!); // Call delete API
 
-          setState(() {
-            products.removeAt(index); // Remove product from UI only after success
-          });
+    try {
+      final productService = ref.read(productApiProvider);
+      await productService.deleteProduct(product.id!); // Call delete API
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${product.name} deleted successfully')),
-          );
-        } catch (e) {
-          // Show error message if deletion fails
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Error'),
-              content: Text('Failed to delete product: $e'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
+      setState(() {
+        products.removeAt(index); // Remove product from UI only after success
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${product.name} deleted successfully')),
+      );
+    } catch (e) {
+      // Show error message if deletion fails
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text('Failed to delete product: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
-          );
-        }
-      },
-      error: (error, stackTrace) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete product: $error')),
-          );
-        // Handle error
-      },
-      loading: () {
-        // Handle loading
-        Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
-
+          ],
+        ),
+      );
+    }
   }
 
 

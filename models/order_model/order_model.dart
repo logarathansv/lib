@@ -1,0 +1,80 @@
+class Order {
+  int orderId;
+  String orderDate;
+  List<Map<String, dynamic>> services;
+  List<Map<String, dynamic>> products;
+  String customerName;
+  String customerMobile;
+  String customerAddress;
+  String customerEmail;
+  String totalAmount;
+
+  Order({
+    required this.orderId,
+    required this.orderDate,
+    required this.services,
+    required this.products,
+    required this.customerName,
+    required this.customerMobile,
+    required this.customerAddress,
+    required this.customerEmail,
+    required this.totalAmount,
+  });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    List<Map<String, dynamic>> serviceList = (json['Services'] as List)
+        .map((service) => {
+      'sname': service['sname'],
+      'cost': service['cost'],
+    })
+        .toList();
+
+    List<Map<String, dynamic>> productList = (json['Products'] as List)
+        .map((product) => {
+      'pname': product['pname'],
+      'quantity': product['quantity'],
+      'cost': product['cost'],
+    })
+        .toList();
+
+    int servicesTotal = serviceList.fold(0, (sum, item) => sum + (item['cost'] as int));
+    int productsTotal = productList.fold(0, (sum, item) => sum + (item['cost'] as int));
+    int totalAmount = servicesTotal + productsTotal;
+
+    return Order(
+      orderId: json['Oid'] as int,
+      orderDate: json['Odate'] as String,
+      services: serviceList,
+      products: productList,
+      customerName: json['customer']['Name'] as String,
+      customerMobile: json['customer']['MobileNo'] as String,
+      customerAddress: json['customer']['address'] as String,
+      customerEmail: json['customer']['email'] as String,
+      totalAmount: totalAmount.toString(),
+    );
+  }
+}
+
+class CreateOrder{
+
+  final int customerId;
+  final List<Map<String, dynamic>> services;
+  final List<Map<String, dynamic>> products;
+
+
+  CreateOrder({
+  required this.customerId,
+  required this.services,
+  required this.products
+  });
+
+  Map<String, dynamic> toJson() {
+  return {
+  "custid": customerId.toString(),
+  "services": services,
+  "products": products,
+  };
+
+  }
+
+}
