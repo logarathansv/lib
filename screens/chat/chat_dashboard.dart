@@ -7,14 +7,14 @@ import 'chat_screen.dart';
 
 class ChatDashboard extends ConsumerStatefulWidget {
   final String uid;
-  ChatDashboard({required this.uid});
+  const ChatDashboard({super.key, required this.uid});
 
   @override
   _ChatDashboardState createState() => _ChatDashboardState();
 }
 
 class _ChatDashboardState extends ConsumerState<ChatDashboard> {
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   String searchQuery = "";
 
   @override
@@ -131,8 +131,8 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        child: Icon(Icons.message),
         backgroundColor: Colors.blue,
+        child: Icon(Icons.message),
       ),
     );
   }

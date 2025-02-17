@@ -8,7 +8,7 @@ import '../../main.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   final GlobalKey<RegisterPageState> registerPageKey = GlobalKey<RegisterPageState>();
-  LoginPage({Key? key}) : super(key: key);
+  LoginPage({super.key});
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }

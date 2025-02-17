@@ -21,7 +21,7 @@ class PremiumTemplate extends StatefulWidget {
   final List<Map<String, String>> updates;
 
   const PremiumTemplate({
-    Key? key,
+    super.key,
     required this.shopName,
     required this.shopDescription,
     required this.bannerImagePath,
@@ -33,7 +33,7 @@ class PremiumTemplate extends StatefulWidget {
     this.services = const [],
     this.products = const [],
     this.updates = const [],
-  }) : super(key: key);
+  });
 
   @override
   _PremiumTemplateState createState() => _PremiumTemplateState();
@@ -193,7 +193,7 @@ class _PremiumTemplateState extends State<PremiumTemplate> {
 
   // Modularized Promotion Line
   Widget _buildPromotionLine() {
-    return Container(
+    return SizedBox(
         height: MediaQuery.of(context).size.height * 0.05,
         child: MovingText(
           text: "This is the long promotion line which is animatedly scrolling",
@@ -308,7 +308,7 @@ class _PremiumTemplateState extends State<PremiumTemplate> {
 class SectionTitle extends StatelessWidget {
   final String title;
 
-  const SectionTitle({Key? key, required this.title}) : super(key: key);
+  const SectionTitle({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +323,7 @@ class SectionTitle extends StatelessWidget {
 }
 
 class PopularItemCard extends StatelessWidget {
-  const PopularItemCard({Key? key}) : super(key: key);
+  const PopularItemCard({super.key});
 
   @override
   Widget build(BuildContext context) {

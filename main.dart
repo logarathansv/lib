@@ -56,6 +56,8 @@ Future<bool> _checkNotificationPermission() async {
 }
 
 class SklyitApp extends StatefulWidget  {
+  const SklyitApp({super.key});
+
   @override
   State<SklyitApp> createState() => _SklyitAppState();
 }

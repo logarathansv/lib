@@ -67,7 +67,7 @@ class ProductService {
        print(formData.fields);
       print(formData.files);
       final response = await _dio.post(
-        '${Endpoints.editInventory}',
+        Endpoints.editInventory,
         data: formData,
       );
       if (response.statusCode == 201) {

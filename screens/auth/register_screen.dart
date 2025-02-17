@@ -11,7 +11,7 @@ import '../../api/endpoints.dart';
 class RegisterPage extends StatefulWidget {
   // final VoidCallback onLogout;
   //
-  RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({super.key});
   @override
   RegisterPageState createState() => RegisterPageState();
 }
@@ -96,7 +96,7 @@ class RegisterPageState extends State<RegisterPage> {
         var uri = Uri.parse('${Endpoints.BASEURL}${Endpoints.register}');
 
         // Send POST request
-        var response = await http.MultipartRequest('POST', uri);
+        var response = http.MultipartRequest('POST', uri);
         sanitizedInputs.forEach((key, value) {
           response.fields[key] = value!;
         });

@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class HighlightsPremium extends StatelessWidget {
   final List<Map<String, String>> highlights;
 
-  const HighlightsPremium({Key? key, required this.highlights})
-      : super(key: key);
+  const HighlightsPremium({super.key, required this.highlights});
 
   @override
   Widget build(BuildContext context) {

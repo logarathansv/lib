@@ -11,7 +11,7 @@ class ChatScreen extends ConsumerStatefulWidget {
   final String receiverId;
   final String receiverName;
 
-  ChatScreen({
+  const ChatScreen({super.key, 
     required this.currentUserId,
     required this.receiverId,
     required this.receiverName,

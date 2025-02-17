@@ -26,7 +26,7 @@ class ChatAPIService{
     } else {
       print('User declined or has not accepted permission');
     }
-    print("fcm ${token}");
+    print("fcm $token");
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
       updateTokenOnServer(newToken, userId);
     });

@@ -5,7 +5,6 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/screens/customers/customer_details.dart';
 import '../../models/customer_model/customer_class.dart';
 import '../../models/order_model/order_model.dart';
-import '../../widgets/generate_pdf/pdf_generator.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../widgets/generate_pdf/preview_share_pdf.dart';
 

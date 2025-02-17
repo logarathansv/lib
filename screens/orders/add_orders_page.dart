@@ -25,8 +25,8 @@ class AddOrderPage extends StatefulWidget {
 
 class _AddOrderPageState extends State<AddOrderPage> {
   final _formKey = GlobalKey<FormState>();
-  List<Service> _selectedServices = [];
-  List<Product> _selectedProducts = [];
+  final List<Service> _selectedServices = [];
+  final List<Product> _selectedProducts = [];
   DateTime? _selectedDate;
 
   @override

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 import '../../../models/crm_model/dashboard/customers_total.dart';
 import '../../../models/crm_model/dashboard/growth_rate.dart';

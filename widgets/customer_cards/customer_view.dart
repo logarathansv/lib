@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/customer_model/customer_class.dart';
-import '../../screens/chat/chat_screen.dart';
 
 class CustomerCard extends StatelessWidget {
   final Customer customer;

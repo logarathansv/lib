@@ -7,7 +7,7 @@ import 'endpoints.dart';
 class ApiClient {
   final Dio dio;
 
-  ApiClient() : dio = Dio(BaseOptions(baseUrl: '${Endpoints.BASEURL}')) {
+  ApiClient() : dio = Dio(BaseOptions(baseUrl: Endpoints.BASEURL)) {
     _init();
   }
 

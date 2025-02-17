@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class MovingText extends StatefulWidget {
   final String text;
 
-  const MovingText({Key? key, required this.text}) : super(key: key);
+  const MovingText({super.key, required this.text});
 
   @override
   _MovingTextState createState() => _MovingTextState();

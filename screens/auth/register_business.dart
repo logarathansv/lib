@@ -10,7 +10,7 @@ import 'LoginPage.dart';
 
 class RegistrationPage extends StatefulWidget {
   final GlobalKey<RegisterPageState> registerPageKey;
-  RegistrationPage({required this.registerPageKey});
+  const RegistrationPage({super.key, required this.registerPageKey});
 
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
@@ -79,7 +79,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Future<void> checkDomainAvailability(String domain) async {
     if (domain.isEmpty) return;
 
-    final response = await apiService.checkDomain(domain+'.com');
+    final response = await apiService.checkDomain('$domain.com');
     setState(() {
       isDomainAvailable = false;
       isDomainChecked = true;
@@ -152,7 +152,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     if (_formKey.currentState!.validate()) {
       final data = {
         'Clientname': clientNameController.text,
-        'domainname': domainNameController.text+'.com',
+        'domainname': '${domainNameController.text}.com',
         'shopname': shopNameController.text,
         'shopdesc': shopDescController.text,
         'shopemail': shopEmailController.text,
@@ -498,7 +498,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       SizedBox(height: 10),
                     ],
                   );
-                }).toList(),
+                }),
                 SizedBox(height: 20),
                 Center(
                   child: ElevatedButton.icon(
