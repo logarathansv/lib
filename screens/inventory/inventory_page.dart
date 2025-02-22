@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
-import '../../api/Inventory/product_api.dart';
 import '../../models/product_model/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../utils/add_product_dialog.dart';

@@ -8,9 +8,11 @@ class OrderService{
 
   Future<List<Order>> getOrders() async{
     try{
+      print('getting orders');
       final response = await _dio.get(
           Endpoints.getOrders
       );
+      print(response.data);
       if(response.statusCode == 200){
         List<dynamic> jsonData = response.data;
         return jsonData.map((data) => Order.fromJson(data)).toList();
@@ -40,6 +42,41 @@ class OrderService{
     }
     catch(error){
       throw Exception("Failed to create Order:$error");
+    }
+  }
+
+  Future<void> editOrder(List<Map<String, dynamic>> products,List<Map<String, dynamic>> services,String orderId) async{
+
+    try{
+      final response = await _dio.put(
+        Endpoints.editOrder,
+        data:{"orderId":orderId,"products":products,"services":services}
+      );
+      if(response.statusCode == 200){
+        print('Order edited successfully!');
+      }
+      else{
+        throw Exception("Failed to edit Order");
+      }
+    }catch(e){
+      throw Exception("Failed to edit Order:$e");
+    }
+  }
+
+  Future<void> deleteOrder(String orderId) async{
+    try{
+      final response = await _dio.put(
+          Endpoints.deleteOrder,
+          data:{"orderId":orderId}
+      );
+      if(response.statusCode == 200){
+        print('Order deleted successfully!');
+      }
+      else{
+        throw Exception("Failed to delete Order");
+      }
+    }catch(e){
+      throw Exception("Failed to delete Order:$e");
     }
   }
 }

@@ -375,7 +375,7 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
                 Row(
                   children: [
                     Text(
-                      order.services.isNotEmpty ? order.services.first['sname'] as String : '',
+                      order.services.first as String,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

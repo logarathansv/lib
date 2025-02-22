@@ -1,5 +1,5 @@
+import 'dart:math';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/screens/customers/customer_details.dart';
@@ -23,10 +23,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   @override
   Widget build(BuildContext context) {
     // Extracting details for easier access
-    // String formattedDate =
-    //     "${widget.order.date_time.toLocal()}".split(' ')[0]; // Get date
-    // String formattedTime =
-    //     "${widget.order.date_time.hour}:${widget.order.date_time.minute.toString().padLeft(2, '0')}"; // Format time
+    String formattedDate =
+        "${DateTime.parse(widget.order.orderDate).toLocal()}".split(' ')[0]; // Get date
+    String formattedTime =
+        "${DateTime.parse(widget.order.orderDate).hour}:${DateTime.parse(widget.order.orderDate).minute.toString().padLeft(2, '0')}"; // Format time
 
     return Scaffold(
       appBar: AppBar(
@@ -55,14 +55,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Display Date and Time
-            // Text(
-            //   'Order Date: $formattedDate',
-            //   style: const TextStyle(fontSize: 16, color: Color(0xFF2f4757)),
-            // ),
-            // Text(
-            //   'Order Time: $formattedTime',
-            //   style: const TextStyle(fontSize: 16, color: Color(0xFF2f4757)),
-            // ),
+            Text(
+              'Order Date: $formattedDate',
+              style: const TextStyle(fontSize: 16, color: Color(0xFF2f4757)),
+            ),
+            Text(
+              'Order Time: $formattedTime',
+              style: const TextStyle(fontSize: 16, color: Color(0xFF2f4757)),
+            ),
             const SizedBox(height: 20),
 
             // Display Customer Name with Icons
@@ -89,9 +89,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         builder: (context) => CustomerDetailsPage(
                           customer: Customer(
                             name: widget.order.customerName,
-                            address: '123 Main St, City, Country',
-                            email: 'johndoe@example.com',
-                            phoneNumber: '+1 123 456 7890',
+                            address: widget.order.customerAddress,
+                            email: widget.order.customerEmail,
+                            phoneNumber: widget.order.customerMobile,
                             labelColor: Colors.blue,
                           ),
                         ),
@@ -112,11 +112,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   color: Color(0xFF028F83)),
             ),
             const SizedBox(height: 8),
-            // for (String service in widget.order.services)
-            //   Text(
-            //     '- $service: \$${_getServiceAmount(service)}',
-            //     style: const TextStyle(color: Color(0xFF2f4757)),
-            //   ),
+            for (Map<String,dynamic> service in widget.order.services)
+              Text(
+                '- ${service['sname']}: \₹${service['cost']}',
+                style: const TextStyle(color: Color(0xFF2f4757)),
+              ),
 
             const SizedBox(height: 20),
 
@@ -131,48 +131,48 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             const SizedBox(height: 8),
             for (var product in widget.order.products)
               Text(
-                '- ${product['name']} (Qty: ${product['quantity']})',
+                '- ${product['pname']} (Qty: ${product['quantity']} : \₹${product['cost']})',
                 style: const TextStyle(color: Color(0xFF2f4757)),
               ),
 
             const SizedBox(height: 20),
 
             // Total Amount
-            // _buildDetailRow(
-            //     'Total Amount:', '\$${widget.order.amount.toStringAsFixed(2)}'),
-            // const SizedBox(height: 30),
+            _buildDetailRow(
+                'Total Amount:', '\$${widget.order.totalAmount}'),
+            const SizedBox(height: 30),
 
             // Generate Invoice Button
-            // ElevatedButton(
-            //   onPressed: () {
-            //     setState(() {
-            //       _pdfDataFuture = generateInvoicePdf(
-            //         shopName: 'Super Shop',
-            //         shopAddress: '123 Main Street, Cityville',
-            //         phoneNumber: '+91 9876543210',
-            //         emailAddress: 'shop@example.com',
-            //         invoiceNumber: 'INV-12345',
-            //         dateTime: DateTime.now(),
-            //         customerName: widget.order.customerName,
-            //         customerAddress: '456 Elm Street, Townsville',
-            //         customerPhone: '+91 9988776655',
-            //         customerEmail: 'johndoe@example.com',
-            //         // orderDetails: [
-            //         //   ...widget.order.services.map((service) => {
-            //         //         'serviceName': service,
-            //         //         'cost': _getServiceAmount(service),
-            //         //       }),
-            //         //   ...widget.order.products.map((product) => {
-            //         //         'serviceName': product['name'],
-            //         //         'cost': product['quantity'] * 100.0, // Example cost
-            //         //       }),
-            //         // ],
-            //         // totalAmount: widget.order.amount,
-            //       );
-            //     });
-            //   },
-            //   child: const Text('Generate Invoice'),
-            // ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _pdfDataFuture = generateInvoicePdf(
+                    shopName: widget.order.shopName,
+                    shopAddress: widget.order.shopAddress,
+                    phoneNumber: widget.order.shopPhoneNumber,
+                    emailAddress: widget.order.shopEmail,
+                    invoiceNumber: 'INV-${Random().nextInt(100000).toString().padLeft(5, '0')}',
+                    dateTime: DateTime.now(),
+                    customerName: widget.order.customerName,
+                    customerAddress: widget.order.customerAddress,
+                    customerPhone: widget.order.customerMobile,
+                    customerEmail: widget.order.customerEmail,
+                    orderDetails: [
+                      ...widget.order.services.map((service) => {
+                            'serviceName': service['sname'],
+                            'cost': {service['cost']},
+                          }),
+                      ...widget.order.products.map((product) => {
+                            'serviceName': product['pname'],
+                            'cost': product['quantity'] * product['cost'], // Example cost
+                          }),
+                    ],
+                    totalAmount: widget.order.totalAmount,
+                  );
+                });
+              },
+              child: const Text('Generate Invoice'),
+            ),
             const SizedBox(height: 20),
             FutureBuilder<Uint8List>(
               future: _pdfDataFuture,
@@ -208,23 +208,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         ),
       ),
     );
-  }
-
-  // Method to get the amount for a specific service
-  double _getServiceAmount(String service) {
-    // For demonstration, return static values based on service name
-    switch (service) {
-      case 'Plumbing':
-        return 1200; // Amount for Plumbing
-      case 'Electrical':
-        return 900; // Amount for Electrical
-      case 'Tailoring':
-        return 1500; // Amount for Tailoring
-      case 'Cleaning':
-        return 800; // Amount for Cleaning
-      default:
-        return 0.0;
-    }
   }
 
   // Helper method to build detail rows

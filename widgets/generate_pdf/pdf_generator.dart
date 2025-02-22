@@ -15,7 +15,7 @@ Future<Uint8List> generateInvoicePdf({
   required String customerEmail,
   required List<Map<String, dynamic>>
       orderDetails, // List of {'serviceName': String, 'cost': double}
-  required double totalAmount,
+  required String totalAmount,
 }) async {
   final pdf = pw.Document();
 
@@ -145,7 +145,7 @@ Future<Uint8List> generateInvoicePdf({
           pw.Align(
             alignment: pw.Alignment.centerRight,
             child: pw.Text(
-              'Total Amount: \$${totalAmount.toStringAsFixed(2)}',
+              'Total Amount: \₹${totalAmount}',
               style: pw.TextStyle(
                 fontSize: 14,
                 fontWeight: pw.FontWeight.bold,
