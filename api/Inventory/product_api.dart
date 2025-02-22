@@ -1,15 +1,11 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sklyit_business/api/endpoints.dart';
 import '../../models/product_model/product_model.dart';
 import 'package:path/path.dart';
-import '../../providers/business_main.dart';
 import 'package:mime/mime.dart';
-import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
-final productApiProvider=FutureProvider((ref)=>ProductService(ref.watch(apiClientProvider).dio));
 
 class ProductService {
   ProductService(this._dio);

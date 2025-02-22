@@ -7,9 +7,7 @@ import '../../models/product_model/product_model.dart';
 import '../../models/service_model/service_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../providers/order_provider.dart';
-
-class ConfirmOrderPage extends ConsumerStatefulWidget {
+class ConfirmOrderPage extends StatefulWidget {
   final List<Service> selectedServices;
   final List<Product> selectedProducts;
   final DateTime selectedDate;
@@ -27,7 +25,7 @@ class ConfirmOrderPage extends ConsumerStatefulWidget {
   _ConfirmOrderPageState createState() => _ConfirmOrderPageState();
 }
 
-class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
+class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
   final _formKey = GlobalKey<FormState>();
   final _customerNameController = TextEditingController();
   final _amountController = TextEditingController();

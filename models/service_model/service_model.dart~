@@ -20,7 +20,7 @@ class Service{
       name: json['ServiceName'],
       description: json['ServiceDesc'],
       imageUrl: json['ImageUrl'],
-      price: json['ServiceCost'],
+      price: json['price'],
     );
   }
 }

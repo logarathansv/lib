@@ -1,5 +1,5 @@
 class Order {
-  int orderId;
+  String orderId;
   String orderDate;
   List<Map<String, dynamic>> services;
   List<Map<String, dynamic>> products;
@@ -8,6 +8,11 @@ class Order {
   String customerAddress;
   String customerEmail;
   String totalAmount;
+  String shopName;
+  String shopAddress;
+  String shopPhoneNumber;
+  String shopEmail;
+
 
   Order({
     required this.orderId,
@@ -19,13 +24,18 @@ class Order {
     required this.customerAddress,
     required this.customerEmail,
     required this.totalAmount,
+    required this.shopName,
+    required this.shopAddress,
+    required this.shopPhoneNumber,
+    required this.shopEmail
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
     List<Map<String, dynamic>> serviceList = (json['Services'] as List)
         .map((service) => {
       'sname': service['sname'],
-      'cost': service['cost'],
+      'cost': (service['cost'] as num).toDouble(),  // Convert num to double
+      'quantity': service['quantity'],
     })
         .toList();
 
@@ -33,16 +43,23 @@ class Order {
         .map((product) => {
       'pname': product['pname'],
       'quantity': product['quantity'],
-      'cost': product['cost'],
+      'cost': (product['cost'] as num).toDouble(),  // Convert num to double
+      'units': product['units'],
     })
         .toList();
 
-    int servicesTotal = serviceList.fold(0, (sum, item) => sum + (item['cost'] as int));
-    int productsTotal = productList.fold(0, (sum, item) => sum + (item['cost'] as int));
-    int totalAmount = servicesTotal + productsTotal;
+    List<Map<String, dynamic>>? addressList = json['addresses'] as List<Map<String, dynamic>>?;
+    String allCities = addressList == null || addressList.isEmpty
+        ? ''
+        : addressList.map((item) => item['city'] as String).join(', ');
+
+    // Fix: Ensure 'cost' values are treated as num before converting to double
+    double servicesTotal = serviceList.fold(0.0, (sum, item) => sum + (item['cost'] as num).toDouble());
+    double productsTotal = productList.fold(0.0, (sum, item) => sum + (item['cost'] as num).toDouble());
+    double totalAmount = servicesTotal + productsTotal;
 
     return Order(
-      orderId: json['Oid'] as int,
+      orderId: json['Oid'] as String,
       orderDate: json['Odate'] as String,
       services: serviceList,
       products: productList,
@@ -51,30 +68,32 @@ class Order {
       customerAddress: json['customer']['address'] as String,
       customerEmail: json['customer']['email'] as String,
       totalAmount: totalAmount.toString(),
+      shopName: json['businessClient']['shopname'] as String,
+      shopAddress: allCities,
+      shopPhoneNumber: json['businessClient']['shopmobile'] as String,
+      shopEmail: json['businessClient']['shopemail'] as String,
     );
   }
+
 }
 
 class CreateOrder{
 
-  final int customerId;
-  final List<Map<String, dynamic>> services;
-  final List<Map<String, dynamic>> products;
-
+   String customerId;
+   List<Map<String, dynamic>>? services;
+   List<Map<String, dynamic>>? products;
 
   CreateOrder({
   required this.customerId,
-  required this.services,
-  required this.products
+  this.services,
+  this.products
   });
 
   Map<String, dynamic> toJson() {
-  return {
-  "custid": customerId.toString(),
-  "services": services,
-  "products": products,
-  };
-
+    return {
+    "custid": customerId.toString(),
+    "services": services!,
+    "products": products!,
+    };
   }
-
 }

@@ -7,3 +7,5 @@ final getProductsProvider=FutureProvider<List<Product>>((ref) async{
   return await ProductService(ref.watch(apiClientProvider).dio).getProducts();
 });
 
+
+final productApiProvider=FutureProvider((ref)=>ProductService(ref.watch(apiClientProvider).dio));

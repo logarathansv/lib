@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/order_model/services_class.dart';
+import '../../models/service_model/service_model.dart';
 import '../../models/customer_model/customer_class.dart';
 
 class ServiceSelectionDialog extends StatefulWidget {

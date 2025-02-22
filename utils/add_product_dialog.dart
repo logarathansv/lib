@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sklyit_business/providers/product_provider.dart';
-import '../api/Inventory/product_api.dart';
 import '../models/product_model/product_model.dart';
 
 class AddProductDialog extends ConsumerStatefulWidget {
@@ -27,6 +26,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   late TextEditingController descriptionController;
   late TextEditingController priceController;
   late TextEditingController quantityController;
+  late TextEditingController unitsController;
+
   File? selectedImage;
   String? existingImageUrl;
 
@@ -34,6 +35,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   bool isDescriptionValid = true;
   bool isPriceValid = true;
   bool isQuantityValid = true;
+  bool isUnitsValid = true;
 
   @override
   void initState() {
@@ -42,6 +44,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     descriptionController = TextEditingController(text: widget.product?.description ?? '');
     priceController = TextEditingController(text: widget.product?.price.toString() ?? '');
     quantityController = TextEditingController(text: widget.product?.quantity.toString() ?? '');
+    unitsController = TextEditingController(text: widget.product?.units ?? '');
 
     if (widget.product != null) {
       existingImageUrl = widget.product!.imageUrl;
@@ -63,6 +66,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       isDescriptionValid = descriptionController.text.isNotEmpty;
       isPriceValid = priceController.text.isNotEmpty;
       isQuantityValid = quantityController.text.isNotEmpty;
+      isUnitsValid = unitsController.text.isNotEmpty;
     });
 
     if (isNameValid && isDescriptionValid && isPriceValid && isQuantityValid) {
@@ -73,6 +77,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         description: descriptionController.text,
         price: (priceController.text),
         quantity: (quantityController.text),
+        units: (unitsController.text),
 
       );
 
@@ -241,6 +246,82 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 errorText: isQuantityValid ? null : 'Quantity is required',
               ),
               keyboardType: TextInputType.number,
+            ),
+            DropdownButtonFormField<String>(
+              value: unitsController.text,
+              decoration: InputDecoration(
+                labelText: 'Units *',
+                errorText: isUnitsValid ? null : 'Units is required',
+              ),
+              onChanged: (value) {
+                unitsController.text = value!;
+              },
+              items: [
+                DropdownMenuItem<String>(
+                  value: '',
+                  child: Text('Select Unit'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Kilogram (kg)',
+                  child: Text('Kilogram (kg)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Litre (L)',
+                  child: Text('Litre (L)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Gram (g)',
+                  child: Text('Gram (g)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Millilitre (ml)',
+                  child: Text('Millilitre (ml)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Piece (pcs)',
+                  child: Text('Piece (pcs)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Dozen (dz)',
+                  child: Text('Dozen (dz)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Packet (pkt)',
+                  child: Text('Packet (pkt)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Metre (m)',
+                  child: Text('Metre (m)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Foot (ft)',
+                  child: Text('Foot (ft)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Milligram (mg)',
+                  child: Text('Milligram (mg)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Box (bx)',
+                  child: Text('Box (bx)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Quintal (qtl)',
+                  child: Text('Quintal (qtl)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Tonne (ton)',
+                  child: Text('Tonne (ton)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Centimetre (cm)',
+                  child: Text('Centimetre (cm)'),
+                ),
+                DropdownMenuItem<String>(
+                  value: 'Pav (250g)',
+                  child: Text('Pav (250g)'),
+                ),
+              ],
             ),
           ],
         ),
