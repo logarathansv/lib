@@ -110,49 +110,65 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final senderNameAsync = ref.watch(nameProvider); // Watch sender name reactively
+    final chatAsync = ref.watch(chatProvider(widget.receiverId));
+    final senderNameAsync = ref.watch(nameProvider);
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {Navigator.pop(context); ref.invalidate(chatProvider(widget.receiverId));},
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft03, color: Colors.black, ),
+        leading: IconButton(
+          onPressed: () {
+            ref.invalidate(chatProvider(widget.receiverId)); // Fix missing messages after navigation
+            Navigator.pop(context);
+          },
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft03, color: Colors.black),
         ),
         title: Text(widget.receiverName),
         backgroundColor: Colors.white,
       ),
-      body: senderNameAsync.when(
-        data: (senderName) {
-          return isLoading
-              ? Center(child: CircularProgressIndicator())
-              : DashChat(
-            currentUser: ChatUser(id: widget.currentUserId),
-            onSend: (ChatMessage newMessage) {
-              if (senderName.isEmpty) {
-                print("Sender name not loaded yet!");
-                return;
-              }
+      body: chatAsync.when(
+        data: (fetchedMessages) {
+          if (messages.isEmpty) {
+            // Prevent messages from resetting unexpectedly
+            messages = fetchedMessages.map((message) {
+              return ChatMessage(
+                text: message.content,
+                user: ChatUser(id: message.sender),
+                createdAt: message.timestamp,
+              );
+            }).toList();
+          }
 
-              socketService.socket.emit('message', {
-                'senderId': widget.currentUserId,
-                'receiverId': widget.receiverId,
-                "senderName": senderName,
-                "receiverName": widget.receiverName,
-                'content': newMessage.text,
-              });
+          return senderNameAsync.when(
+            data: (senderName) {
+              return DashChat(
+                currentUser: ChatUser(id: widget.currentUserId),
+                onSend: (ChatMessage newMessage) {
+                  if (senderName.isEmpty) return;
 
-              setState(() {
-                messages.insert(0, newMessage);
-              });
+                  socketService.socket.emit('message', {
+                    'senderId': widget.currentUserId,
+                    'receiverId': widget.receiverId,
+                    "senderName": senderName,
+                    "receiverName": widget.receiverName,
+                    'content': newMessage.text,
+                  });
+
+                  setState(() {
+                    messages.insert(0, newMessage);
+                  });
+                },
+                messages: messages,
+                inputOptions: InputOptions(alwaysShowSend: true),
+              );
             },
-            messages: messages,
-            inputOptions: InputOptions(
-              alwaysShowSend: true,
-            ),
+            loading: () => Center(child: CircularProgressIndicator()),
+            error: (e, st) => Center(child: Text('Error fetching name: $e')),
           );
         },
-        loading: () => Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error fetching name: $e')),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text('Error fetching messages: $e')),
       ),
     );
   }
+
 }

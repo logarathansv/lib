@@ -7,7 +7,6 @@ import '../../api/auth_api/login_api.dart';
 import '../../main.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
-  final GlobalKey<RegisterPageState> registerPageKey = GlobalKey<RegisterPageState>();
   LoginPage({super.key});
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -147,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterPage(key: widget.registerPageKey,)),
+                        MaterialPageRoute(builder: (context) => RegisterPage()),
                       );
                     },
                     child: Text(

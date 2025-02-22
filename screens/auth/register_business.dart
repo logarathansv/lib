@@ -9,8 +9,7 @@ import 'package:textfield_tags/textfield_tags.dart';
 import 'LoginPage.dart';
 
 class RegistrationPage extends StatefulWidget {
-  final GlobalKey<RegisterPageState> registerPageKey;
-  const RegistrationPage({super.key, required this.registerPageKey});
+  const RegistrationPage();
 
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
@@ -518,8 +517,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   child: ElevatedButton.icon(
                     onPressed: () async {
                       if(_formKey.currentState!.validate()) {
-                        await widget.registerPageKey.currentState?.registerUser(context)
-                          .then((_) async => await registerBusiness());
+                        await registerBusiness();
                       }
                     },
                     icon: HugeIcon(

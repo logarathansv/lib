@@ -29,7 +29,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       getProducts();
     });
   }
-  void getProducts() async {
+  Future<void> getProducts() async {
       final productsAsync = ref.watch(getProductsProvider);
       productsAsync.when(
         data: (fetchedProducts) {
@@ -46,20 +46,17 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     }
 
   void _addProduct() async {
-
     await showDialog(
       context: context,
       builder: (context) => AddProductDialog(
         onProductAdded: (product) {
-          setState(() {
-            print(product);
-            products.add(product);
-          });
+          ref.invalidate(getProductsProvider);
         },
         onProductUpdated: (product) {},
       ),
     );
   }
+
 
   void _editProduct(Product product) async {
     await showDialog(
@@ -68,68 +65,67 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         product: product,
         onProductUpdated: (updatedProduct) {
           setState(() {
-            product.name = updatedProduct.name;
-            product.description = updatedProduct.description;
-            product.price = updatedProduct.price;
-            product.quantity = updatedProduct.quantity;
-            product.imageUrl = updatedProduct.imageUrl;
+            // Instead of modifying the existing product, replace it in the list
+            int index = products.indexWhere((p) => p.id == product.id);
+            if (index != -1) {
+              products[index] = Product(
+                id: updatedProduct.id,
+                name: updatedProduct.name,
+                description: updatedProduct.description,
+                price: updatedProduct.price,
+                quantity: updatedProduct.quantity,
+                imageUrl: updatedProduct.imageUrl, // Ensure image is not lost
+              );
+            }
           });
+
+          ref.invalidate(getProductsProvider);
         },
         onProductAdded: (updatedProduct) {},
       ),
     );
   }
 
+
   void _deleteProduct(int index) async {
-    final product = products[index]; // Get the product to delete
-    ref.watch(productApiProvider).when(
-      data: (productService) async {
-        try {
-          await productService.deleteProduct(product.id!); // Call delete API
+    final product = products[index];
 
-          setState(() {
-            products.removeAt(index); // Remove product from UI only after success
-          });
+    try {
+      await ref.read(productApiProvider.future).then((productService) {
+        return productService.deleteProduct(product.id!);
+      });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${product.name} deleted successfully')),
-          );
-        } catch (e) {
-          // Show error message if deletion fails
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Error'),
-              content: Text('Failed to delete product: $e'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
+      ref.invalidate(getProductsProvider); // Ensure list is reloaded
+
+      setState(() {
+        products.removeAt(index); // Remove product after deletion
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${product.name} deleted successfully')),
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text('Failed to delete product: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
-          );
-        }
-      },
-      error: (error, stackTrace) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete product: $error')),
-          );
-        // Handle error
-      },
-      loading: () {
-        // Handle loading
-        Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
-
+          ],
+        ),
+      );
+    }
   }
 
 
   @override
   Widget build(BuildContext context) {
+    final productsAsync = ref.watch(getProductsProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xfff4c345),
@@ -151,100 +147,110 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    // Search Bar
-                    Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Search... ",
-                          prefixIcon: Icon(Icons.search),
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 20),
-                        ),
-                        onChanged: (text) => _searchProducts(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Filter Tags
-                    SizedBox(
-                      height: 40,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          _buildFilterTag('All'),
-                          _buildFilterTag('Empty Stock'),
-                          _buildFilterTag('Low Stock'),
-                          _buildFilterTag('High Stock'),
-                          _buildFilterTag('Price: Low to High'),
-                          _buildFilterTag('Price: High to Low'),
-                          _buildFilterTag('Quantity: Low to High'),
-                          _buildFilterTag('Quantity: High to Low'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _searchResults.isEmpty
-                      ? _getFilteredProducts().length
-                      : _searchResults.length,
-                  itemBuilder: (context, index) {
-                    final product = _searchResults.isEmpty
-                        ? _getFilteredProducts()[index]
-                        : _searchResults[index];
-                    return ProductCard(
-                      product: product,
-                      onEdit: () => _editProduct(product),
-                      onDelete: () => _deleteProduct(index),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-          // Add Product Button
-          Positioned(
-            bottom: 25,
-            right: 20,
-            child: ElevatedButton(
-              onPressed: _addProduct,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xfff4c345),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.all(12),
-                minimumSize: const Size(40, 40),
-              ),
-              child: const Icon(
-                Icons.add,
-                size: 30,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
+      body: productsAsync.when(
+        data: (fetchedProducts) {
+          products = fetchedProducts; // Update the local products list
+          return _buildProductList();
+        },
+        error: (error, stackTrace) => Center(child: Text("Error: $error")),
+        loading: () => Center(child: CircularProgressIndicator()),
       ),
     );
   }
 
-  // Build a filter tag
+  Widget _buildProductList() {
+    return Stack(
+      children: [
+        Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  // Search Bar
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Search... ",
+                        prefixIcon: Icon(Icons.search),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
+                      ),
+                      onChanged: (text) => _searchProducts(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Filter Tags
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _buildFilterTag('All'),
+                        _buildFilterTag('Empty Stock'),
+                        _buildFilterTag('Low Stock'),
+                        _buildFilterTag('High Stock'),
+                        _buildFilterTag('Price: Low to High'),
+                        _buildFilterTag('Price: High to Low'),
+                        _buildFilterTag('Quantity: Low to High'),
+                        _buildFilterTag('Quantity: High to Low'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _searchResults.isEmpty
+                    ? _getFilteredProducts().length
+                    : _searchResults.length,
+                itemBuilder: (context, index) {
+                  final product = _searchResults.isEmpty
+                      ? _getFilteredProducts()[index]
+                      : _searchResults[index];
+                  return ProductCard(
+                    product: product,
+                    onEdit: () => _editProduct(product),
+                    onDelete: () => _deleteProduct(index),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        // Add Product Button
+        Positioned(
+          bottom: 25,
+          right: 20,
+          child: ElevatedButton(
+            onPressed: _addProduct,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xfff4c345),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(12),
+              minimumSize: const Size(40, 40),
+            ),
+            child: const Icon(
+              Icons.add,
+              size: 30,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildFilterTag(String label) {
     return GestureDetector(
       onTap: () {
@@ -296,17 +302,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     }
   }
 
-  // Search products
   void _searchProducts() {
     setState(() {
-      _searchResults = _getFilteredProducts()
+      _searchResults = products
           .where((product) =>
-              product.name
-                  .toLowerCase()
-                  .contains(_searchController.text.toLowerCase()) ||
-              product.description!
-                  .toLowerCase()
-                  .contains(_searchController.text.toLowerCase()))
+      product.name
+          .toLowerCase()
+          .contains(_searchController.text.toLowerCase()) ||
+          (product.description?.toLowerCase() ?? "")
+              .contains(_searchController.text.toLowerCase()))
           .toList();
     });
   }

@@ -120,7 +120,7 @@ class RegisterPageState extends State<RegisterPage> {
         Map<String, dynamic> responseData = jsonDecode(res.body);
 
         if (res.statusCode == 201) {
-          print('Registration successful!');
+          print('User Registration successful!');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Registration in progress...'),
@@ -490,13 +490,12 @@ class RegisterPageState extends State<RegisterPage> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if(_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        // registerUser(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (
-                            context) =>
-                            RegistrationPage(registerPageKey: widget.key as GlobalKey<RegisterPageState>,)));
+                        await registerUser(context);
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (
+                            context) => RegistrationPage(), ), (route) => false);
                       }
                     },
                     style: ElevatedButton.styleFrom(

@@ -1,22 +1,115 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sklyit_business/api/refresh_api.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 import 'endpoints.dart';
 
 class ApiClient {
-  final Dio dio;
+  static final ApiClient _instance = ApiClient._internal();
+  final Dio dio = Dio(BaseOptions(baseUrl: Endpoints.BASEURL));
+  final FlutterSecureStorage storage = FlutterSecureStorage();
+  bool _isRefreshing = false; // Prevent multiple refresh attempts
+  String? _newToken; // Cache the new token to prevent duplicate refresh calls
 
-  ApiClient() : dio = Dio(BaseOptions(baseUrl: Endpoints.BASEURL)) {
-    _init();
+  factory ApiClient() {
+    return _instance;
   }
 
-  Future<void> _init() async {
-    final storage = FlutterSecureStorage();
-    await RefreshAPIService(dio).isAccessValid();
-    String? token = await storage.read(key: 'token');
-    if (token != null) {
-      dio.options.headers['Authorization'] = 'Bearer $token';
+  ApiClient._internal() {
+    _addInterceptors();
+  }
+
+  void _addInterceptors() {
+    print("Adding Dio Interceptors...");
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          print("onRequest triggered for: ${options.uri}");
+
+          final token = await storage.read(key: 'token');
+          print("Retrieved token: $token");
+
+          if (token != null) {
+            if (JwtDecoder.isExpired(token)) {
+              try {
+                if (!_isRefreshing) {
+                  _isRefreshing = true;
+                  _newToken = await _refreshAccessToken();
+                  _isRefreshing = false;
+                }
+                if (_newToken != null) {
+                  options.headers['Authorization'] = 'Bearer $_newToken';
+                }
+              } catch (e) {
+                _isRefreshing = false;
+                print("Token refresh failed: $e");
+                handler.reject(DioException(requestOptions: options, error: 'Token refresh failed'));
+                return;
+              }
+            } else {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+          }
+          handler.next(options);
+        },
+        onError: (error, handler) async {
+          print("onError triggered: ${error.response?.statusCode}");
+
+          if (error.response?.statusCode == 401) {
+            try {
+              if (!_isRefreshing) {
+                _isRefreshing = true;
+                _newToken = await _refreshAccessToken();
+                _isRefreshing = false;
+              }
+
+              if (_newToken != null) {
+                error.requestOptions.headers['Authorization'] = 'Bearer $_newToken';
+
+                // Retry request with new token but using a new Dio instance to prevent looping
+                final newDio = Dio(BaseOptions(baseUrl: Endpoints.BASEURL));
+                final response = await newDio.fetch(error.requestOptions);
+                handler.resolve(response);
+                return;
+              }
+            } catch (e) {
+              _isRefreshing = false;
+              print("Token refresh failed: $e");
+              handler.reject(DioException(requestOptions: error.requestOptions, error: 'Token refresh failed'));
+            }
+          }
+
+          handler.next(error);
+        },
+      ),
+    );
+  }
+
+  Future<String> _refreshAccessToken() async {
+    final rtoken = await storage.read(key: 'rtoken');
+    final uid = await storage.read(key: 'userId');
+
+    if (rtoken == null || uid == null) {
+      throw Exception('Refresh token or user ID missing. Please log in again.');
+    }
+
+    print("Refreshing token for user: $uid");
+
+    // Use a separate Dio instance to refresh token to avoid triggering the interceptor
+    final refreshDio = Dio(BaseOptions(baseUrl: Endpoints.BASEURL));
+    final response = await refreshDio.post(
+      '${Endpoints.refresh_token}/$uid',
+      data: {"refreshToken": rtoken},
+    );
+
+    print("Refresh Response: ${response.data}");
+
+    if (response.statusCode == 201) {
+      final newToken = response.data['token'];
+      await storage.write(key: 'token', value: newToken);
+      return newToken;
+    } else {
+      throw Exception('Failed to refresh token');
     }
   }
 }
