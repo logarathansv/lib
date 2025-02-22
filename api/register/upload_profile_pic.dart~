@@ -1,0 +1,44 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../endpoints.dart';
+
+class uploadProfilePicAPIService {
+  final Dio _dio;
+  uploadProfilePicAPIService(this._dio);
+  final storage = FlutterSecureStorage();
+
+  Future<String> uploadPhoto(String imagepath) async {
+    try {
+      final token = await storage.read(key: 'token');
+
+      print(imagepath.split('/').last);
+      print(imagepath);
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          imagepath,
+          filename: imagepath.split('/').last,
+        ),
+      });
+
+      final response = await _dio.post(
+        ']${Endpoints.upload_image}',
+        data: formData,
+        options: Options(
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': 'Bearer $token',
+            },
+        ),
+      );
+      print(response.data);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return 'Profile Uploaded Successfully';
+      } else {
+        throw Exception('Failed to upload profile: ${response.statusMessage}');
+      }
+    } catch (error) {
+      throw Exception('Failed to upload profile: $error');
+    }
+  }
+}

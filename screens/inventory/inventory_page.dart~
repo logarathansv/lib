@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import '../../api/Inventory/product_api.dart';
 import '../../models/product_model/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../utils/add_product_dialog.dart';
@@ -49,7 +50,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       context: context,
       builder: (context) => AddProductDialog(
         onProductAdded: (product) {
-          ref.invalidate(getProductsProvider);
+          ref.read(getProductsProvider.notifier).invalidate(); // Refresh provider
         },
         onProductUpdated: (product) {},
       ),
@@ -78,7 +79,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             }
           });
 
-          ref.invalidate(getProductsProvider);
+          ref.read(getProductsProvider.notifier).invalidate(); // Refresh product list
         },
         onProductAdded: (updatedProduct) {},
       ),
@@ -94,7 +95,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         return productService.deleteProduct(product.id!);
       });
 
-      ref.invalidate(getProductsProvider); // Ensure list is reloaded
+      ref.read(getProductsProvider.notifier).invalidate(); // Ensure list is reloaded
 
       setState(() {
         products.removeAt(index); // Remove product after deletion

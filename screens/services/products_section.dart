@@ -8,10 +8,10 @@ class ProductsSection extends StatefulWidget {
   final bool isBusiness; // Boolean to check if the user is in business mode
 
   const ProductsSection({
-    Key? key,
+    super.key,
     required this.products,
     required this.isBusiness,
-  }) : super(key: key);
+  });
 
   @override
   _ProductsSectionState createState() => _ProductsSectionState();

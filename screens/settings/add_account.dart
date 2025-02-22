@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 class AddAccount extends StatefulWidget {
+  const AddAccount({super.key});
+
   @override
   _AddAccountState createState() => _AddAccountState();
 }
@@ -96,8 +98,8 @@ class _AddAccountState extends State<AddAccount> {
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _addAccount,
-                  child: Text('Add Account', style: TextStyle(color: Colors.white),),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                  child: Text('Add Account', style: TextStyle(color: Colors.white),),
                 ),
               ],
             ),

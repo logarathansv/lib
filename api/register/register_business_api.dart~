@@ -1,0 +1,45 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../endpoints.dart';
+
+class RegisterBusiness{
+  final Dio _dio = Dio();
+  final storage = FlutterSecureStorage();
+
+  Future<String> registerBusiness(Map<String, dynamic> registerData) async{
+    try{
+      print(registerData);
+      final response = await _dio.post(
+        '${Endpoints.BASEURL}${Endpoints.register_business}',
+        data: {
+          registerData,
+        }
+      );
+      print(response.data);
+      if(response.statusCode == 201 || response.statusCode == 200){
+        return 'Business Registered Successfully';
+      }else{
+        throw Exception('Failed to register business');
+      }
+    }
+    catch(error){
+      print(error);
+      throw Exception('Failed to register business $error');
+    }
+  }
+
+  Future<String> checkDomain(String domain) async{
+    try{
+      final response = await _dio.get(
+        '${Endpoints.BASEURL}${Endpoints.check_domain}',
+        data: {'domain': domain}
+      );
+      print(response.data);
+      return response.data;
+    }
+    catch(error){
+      throw Exception('Failed to check domain $error');
+    }
+  }
+}

@@ -15,7 +15,7 @@ class PreloaderScreen extends ConsumerStatefulWidget {
 
 class _PreloaderScreenState extends ConsumerState<PreloaderScreen> {
   bool _isLoading = true;
-  bool _isInitialLoad = true; // Flag to track initial load
+  final bool _isInitialLoad = true; // Flag to track initial load
 
   @override
   void initState() {

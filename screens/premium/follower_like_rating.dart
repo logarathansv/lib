@@ -8,12 +8,12 @@ class FollowerLikeRatingPage extends StatelessWidget {
   final Color bodyColor;
 
   const FollowerLikeRatingPage({
-    Key? key,
+    super.key,
     required this.followers,
     required this.likesCount,
     required this.rating,
     required this.bodyColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class FollowerLikeRatingPage extends StatelessWidget {
       },
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: this.bodyColor, // White text color
+        backgroundColor: bodyColor, // White text color
         side: BorderSide(color: Colors.white), // White border
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30), // Rounded corners

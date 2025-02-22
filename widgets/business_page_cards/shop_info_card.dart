@@ -64,7 +64,7 @@ class ShopInfoCard extends StatelessWidget {
               _buildCircularButton(
                   Icons.person_add, "Follow", iconSize, textSize),
               _buildCircularButton(
-                  Icons.thumb_up, "$likesCount", iconSize, textSize),
+                  Icons.thumb_up, likesCount, iconSize, textSize),
               _buildCircularButton(
                   Icons.star_border, "Rate", iconSize, textSize),
             ],
