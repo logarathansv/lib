@@ -156,34 +156,6 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
-            // Refresh Button
-            ElevatedButton(
-              onPressed: () async {
-                var connectivityResult = await Connectivity().checkConnectivity();
-                if (connectivityResult != ConnectivityResult.none) {
-                  // Internet is back
-                  Navigator.pop(context); // Close the dialog
-                  setState(() {
-                    _isDialogOpen = false;
-                  });
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("No internet connection found!"),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              ),
-              child: Text(
-                "Refresh",
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
           ],
         ),
       ),
@@ -263,7 +235,7 @@ class _PersonalCareBusinessPageState
       Center(child: Text('Under Construction')),
       // BusinessPerspective(),
       ChatDashboard(uid: uid),
-      const SettingsPage(),
+      SettingsPage(),
     ];
   }
 

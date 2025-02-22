@@ -117,7 +117,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            // ref.invalidate(chatProvider(widget.receiverId)); // Fix missing messages after navigation
+            ref.invalidate(chatProvider(widget.receiverId)); // Fix missing messages after navigation
             Navigator.pop(context);
           },
           icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft03, color: Colors.black),

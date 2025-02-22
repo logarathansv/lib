@@ -8,6 +8,9 @@ class Endpoints {
   static const String logout = '/bs/auth/logout';
   static const String register_business = '/bs/register';
 
+  static const String get_personal_details = '/users';
+  static const String update_personal_details = '/users/updateUser';
+
   static const String check_domain = '/bs/domain';
 
   //Business Main Page

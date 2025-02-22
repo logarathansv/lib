@@ -172,7 +172,7 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         onPressed: () async {
                           await LogoutAPIService(ref.watch(apiClientProvider).dio).logout();
-                          // onLogout();
+                          onLogout();
                           SystemNavigator.pop();
                           // Navigator.pushAndRemoveUntil(
                           //   context,

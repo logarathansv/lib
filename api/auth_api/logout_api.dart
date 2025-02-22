@@ -13,8 +13,8 @@ class LogoutAPIService{
   Future<String> logout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final response = await _dio.post(
-          '${Endpoints.BASEURL}${Endpoints.logout}',
+      final response = await _dio.get(
+          '${Endpoints.logout}',
       );
       print(response.data);
       if (response.statusCode == 201 || response.statusCode == 200) {
