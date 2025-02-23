@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/models/order_model/order_model.dart';
-import '../../api/Order/order_api.dart';
+import 'package:sklyit_business/screens/orders/orders_list.dart';
 import '../../models/customer_model/customer_class.dart';
 import '../../models/product_model/product_model.dart';
 import '../../models/service_model/service_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ConfirmOrderPage extends StatefulWidget {
+import '../../providers/order_provider.dart';
+
+class ConfirmOrderPage extends ConsumerStatefulWidget {
   final List<Service> selectedServices;
   final List<Product> selectedProducts;
   final DateTime selectedDate;
@@ -25,7 +27,7 @@ class ConfirmOrderPage extends StatefulWidget {
   _ConfirmOrderPageState createState() => _ConfirmOrderPageState();
 }
 
-class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
+class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
   final _formKey = GlobalKey<FormState>();
   final _customerNameController = TextEditingController();
   final _amountController = TextEditingController();
@@ -216,7 +218,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
         print('Error sending order: $e');
       }
       // Return the new order to the previous page
-      Navigator.of(context).pop(newOrder);
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AddOrdersPage()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),

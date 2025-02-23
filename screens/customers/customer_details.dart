@@ -3,46 +3,22 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../models/customer_model/customer_class.dart';
 
-class CustomerDetailsPage extends StatelessWidget {
-  final String customerName = "John Doe";
-  final String customerPhone = "+91 9876543210";
-  final String customerAddress = "123 Main St, Springfield";
-  final String customerEmail = "john.doe@example.com";
+class CustomerDetailsPage extends StatefulWidget {
 
-  final List<Map<String, dynamic>> pastServices = [
-    {
-      'date': '2023-10-01',
-      'time': '10:00 AM',
-      'type': 'Cleaning',
-      'cost': 2000,
-    },
-    {
-      'date': '2023-09-15',
-      'time': '02:00 PM',
-      'type': 'Repair',
-      'cost': 1500,
-    },
-    {
-      'date': '2023-08-20',
-      'time': '05:30 PM',
-      'type': 'Maintenance',
-      'cost': 3000,
-    },
-    {
-      'date': '2023-07-05',
-      'time': '09:15 AM',
-      'type': 'Cleaning',
-      'cost': 2000,
-    },
-    {
-      'date': '2023-06-10',
-      'time': '03:45 PM',
-      'type': 'Repair',
-      'cost': 1800,
-    }
-  ];
   final Customer customer;
   CustomerDetailsPage({super.key, required this.customer});
+
+  @override
+  State<CustomerDetailsPage> createState() => _CustomerDetailsPageState();
+}
+
+class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
+  final List<Map<String, dynamic>> pastServices = [];
+
+  void initState() {
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +66,10 @@ class CustomerDetailsPage extends StatelessWidget {
                       ),
                     ),
                     const Divider(color: Color(0xFF2f4757), thickness: 1),
-                    _buildDetailRow('Name:', customerName),
-                    _buildDetailRow('Phone:', customerPhone),
-                    _buildDetailRow('Address:', customerAddress),
-                    _buildDetailRow('Email:', customerEmail),
+                    _buildDetailRow('Name:', widget.customer.name),
+                    _buildDetailRow('Phone:', widget.customer.phoneNumber),
+                    _buildDetailRow('Address:', widget.customer.address),
+                    _buildDetailRow('Email:', widget.customer.email),
                   ],
                 ),
               ),

@@ -2,86 +2,112 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/customer_model/customer_class.dart';
-import '../../screens/chat/chat_screen.dart';
+import '../../providers/customer_provider.dart';
+import '../../screens/customers/get_customer_details.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CustomerCard extends StatelessWidget {
+
+class CustomerCard extends ConsumerWidget {
   final Customer customer;
 
   const CustomerCard({super.key, required this.customer});
 
+  Future<void> _editCustomer(BuildContext context) async {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            AddNewCustomerPage(customer: customer),
+        transitionDuration: const Duration(milliseconds: 100),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: const Offset(0, 0),
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _deleteCustomer(WidgetRef ref) async {
+    try {
+      final customerService = await ref.read(customerServiceProvider.future);
+      await customerService.deleteCustomer(customer.custId!);
+      
+    } catch (error) {
+      print('Error deleting customer: $error');
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Center(
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.75, // 40% of screen width
-        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        width: MediaQuery.of(context).size.width * 0.9,
+        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 1.0),
         child: Card(
-          elevation: 4.0, // Subtle shadow effect
+          elevation: 4.0,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Customer Name
-                Text(
-                  customer.name,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        customer.name,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _editCustomer(context),
+                      icon: const Icon(Icons.edit),
+                    ),
+                    IconButton(
+                      onPressed: () => _deleteCustomer(ref),
+                      icon: const Icon(Icons.delete),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8), // Spacing
-                // Customer Address
                 Text(
                   customer.address,
-                  style: const TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 14.0, color: Colors.grey),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12), // Spacing
-                // Contact Icons (Row)
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Phone Icon
                     IconButton(
                       onPressed: () async {
-                        final Uri url =
-                            Uri(scheme: 'tel', path: customer.phoneNumber);
+                        final Uri url = Uri(scheme: 'tel', path: customer.phoneNumber);
                         if (await canLaunchUrl(url)) {
                           await launchUrl(url);
                         } else {
-                          print('Could not launch the phone dialer');
+                          print('Could not launch phone dialer');
                         }
                       },
-                      icon: const Icon(
-                        Icons.call_rounded,
-                        size: 22,
-                        color: Color(0xFF028F83),
-                      ),
+                      icon: const Icon(Icons.call_rounded, size: 22, color: Color(0xFF028F83)),
                     ),
-                    // Chat Icon
                     IconButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatScreen(),
-                          ),
-                        );
+                        print("Chat functionality to be implemented");
                       },
-                      icon: const Icon(
-                        Icons.chat_outlined,
-                        size: 22,
-                        color: Color(0xFF028F83),
-                      ),
+                      icon: const Icon(Icons.chat_outlined, size: 22, color: Color(0xFF028F83)),
                     ),
-                    // WhatsApp Icon
                     IconButton(
                       onPressed: () {
                         print("WhatsApp Opens");

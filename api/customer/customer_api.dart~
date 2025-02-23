@@ -57,7 +57,7 @@ class CustomerService {
   Future<void> editCustomer(Customer customer) async{
     try{
       final response = await _dio.put(
-          '${Endpoints.editCustomer}/${customer.custId}',
+          Endpoints.editCustomer,
           data: customer.toJson()
       );
       if(response.statusCode == 200){

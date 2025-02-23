@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String BASEURL = 'http://192.168.244.41:3000';
+  static const String BASEURL = 'http://192.168.255.85:3000';
 
   static const String users = '/users';
 
@@ -33,4 +33,8 @@ class Endpoints {
   static const String editOrder='/bs/orders';
   static const String deleteOrder='/bs/orders';
 
+  //Customer Management
+  static const String getCustomers='/bs/bs_customer';
+  static const String editCustomer='/bs/bs_customers';
+  static const String deleteCustomer='/bs/bs_customer';
 }

@@ -70,7 +70,6 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     });
 
     if (isNameValid && isDescriptionValid && isPriceValid && isQuantityValid) {
-      final productService = ref.read(productApiProvider);
       final newProduct = Product(
         id: widget.product?.id,  // If updating, keep the same ID
         name: nameController.text,

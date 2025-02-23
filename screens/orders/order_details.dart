@@ -6,6 +6,7 @@ import 'package:sklyit_business/screens/customers/customer_details.dart';
 import '../../models/customer_model/customer_class.dart';
 import '../../models/order_model/order_model.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import '../../widgets/generate_pdf/pdf_generator.dart';
 import '../../widgets/generate_pdf/preview_share_pdf.dart';
 
 class OrderDetailsPage extends StatefulWidget {
@@ -92,7 +93,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             address: widget.order.customerAddress,
                             email: widget.order.customerEmail,
                             phoneNumber: widget.order.customerMobile,
-                            labelColor: Colors.blue,
+                            createdAt: DateTime.now().toString(),
                           ),
                         ),
                       ),

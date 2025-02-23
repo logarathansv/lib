@@ -140,18 +140,13 @@ class _AddOrderPageState extends State<AddOrderPage> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
                                   child: TextFormField(
-                                    initialValue: product.quantity.toString(),
+                                    initialValue: '1',
                                     decoration: const InputDecoration(
                                       labelText: 'Quantity',
                                       border: OutlineInputBorder(),
                                     ),
                                     keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        product.quantity =
-                                             "1";
-                                      });
-                                    },
+
                                   ),
                                 ),
                             ],

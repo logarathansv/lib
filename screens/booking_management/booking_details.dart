@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/screens/customers/get_customer_details.dart';
-
 import '../../models/customer_model/customer_class.dart';
 import '../customers/customer_details.dart';
 
@@ -95,20 +94,7 @@ class BookingDetailsPage extends StatelessWidget {
       required bool isNewCustomer,
       required BuildContext context}) {
     List<Customer> customers = [
-      Customer(
-        name: 'John Doe',
-        address: '123 Main St, City, Country',
-        email: 'johndoe@example.com',
-        phoneNumber: '+1 123 456 7890',
-        labelColor: Colors.blue,
-      ),
-      Customer(
-        name: 'Jane Smith',
-        address: '456 Elm St, Town, Country',
-        email: 'janesmith@example.com',
-        phoneNumber: '+1 987 654 3210',
-        labelColor: Colors.green,
-      ),
+
     ];
 
     return Card(

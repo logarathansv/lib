@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/models/order_model/order_model.dart';
-import '../../api/Order/order_api.dart';
-import 'package:sklyit_business/models/order_model/services_class.dart';
+import 'package:sklyit_business/screens/orders/orders_list.dart';
 import '../../models/customer_model/customer_class.dart';
 import '../../models/product_model/product_model.dart';
 import '../../models/service_model/service_model.dart';
@@ -79,7 +78,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                   setState(() {
                     _selectedCustomer = value;
                     if (value != null) {
-                      _customerNameController.text = value.name;
+                      _customerNameController.text = value.custId.toString();
                     }
                   });
                 },
@@ -219,7 +218,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
         print('Error sending order: $e');
       }
       // Return the new order to the previous page
-      Navigator.of(context).pop(newOrder);
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AddOrdersPage()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
