@@ -1,0 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sklyitprofessional/models/profile_models/customer_details_model.dart';
+import '../models/profile_models/profile_model.dart';
+import '../utils/api/profile/fetch_profile_api.dart';
+final fetchProfileAPI = Provider<ProfileApiService>((ref) => ProfileApiService());
+
+final profileProvider = FutureProvider<ProfileModel>((ref) async {
+  final apiService = ref.watch(fetchProfileAPI);
+  return await apiService.fetchProfile();
+});
+
+final userProfileProvider = FutureProvider.family<UserDetails, String>((ref, userId) async {
+  final apiService = ref.watch(fetchProfileAPI);
+  return await apiService.fetchUserDetails(userId);
+});

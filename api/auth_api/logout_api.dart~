@@ -5,15 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../endpoints.dart';
 
 class LogoutAPIService{
-  final Dio _dio = Dio();
+  final Dio _dio;
+
+  LogoutAPIService(this._dio);
   final storage = FlutterSecureStorage();
 
   Future<String> logout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final uid = await storage.read(key: 'userId');
-      final response = await _dio.post(
-          '${Endpoints.BASEURL}${Endpoints.logout}/$uid',
+      final response = await _dio.get(
+          '${Endpoints.BASEURL}${Endpoints.logout}',
       );
       print(response.data);
       if (response.statusCode == 201 || response.statusCode == 200) {

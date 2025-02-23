@@ -86,7 +86,6 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
                             ),
                             subtitle: Text("Tap to chat"),
                             onTap: () {
-                              ref.invalidate(chatProvider(filteredMessages[index].userId));
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
