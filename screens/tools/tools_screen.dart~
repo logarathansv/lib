@@ -1,14 +1,11 @@
-import 'dart:ffi' hide Size;
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:provider/provider.dart';
+import 'package:sklyit_business/screens/service/service_screen.dart';
 import 'package:sklyit_business/screens/tools/tools_store.dart';
 
-import '../../models/data.dart';
 import '../booking_management/booking_list.dart';
 import '../crm/crm_main.dart';
 import '../inventory/inventory_page.dart';
-import '../ledger.dart';
 import '../orders/orders_list.dart';
 import '../customers/customer_list.dart';
 import '../promotions/promotions_selection.dart';
@@ -24,11 +21,11 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
   final List<String> _iconname = [
     "Customers",
     "Orders",
-    "Credit",
     "Bookings",
     "Promotions",
     "CRM",
-    "Inventory"
+    "Inventory",
+    "Services"
   ];
   final List<HugeIcon> _icons = [
     const HugeIcon(
@@ -39,11 +36,6 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
     const HugeIcon(
       icon: HugeIcons.strokeRoundedShoppingBasket01,
       color: Colors.deepOrangeAccent,
-      size: 24.0,
-    ),
-    const HugeIcon(
-      icon: HugeIcons.strokeRoundedSaveMoneyDollar,
-      color: Colors.green,
       size: 24.0,
     ),
     const HugeIcon(
@@ -65,23 +57,21 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
       icon: HugeIcons.strokeRoundedWarehouse,
       color: Color(0xfff4c345),
       size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedActivity01,
+      color: Colors.blue,
+      size: 24.0,
     )
   ];
   final List<Widget> _pages = [
     AddCustomerPage(),
     AddOrdersPage(),
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<DataModel>(
-          create: (_) => DataModel(),
-        ),
-      ],
-      child: const LedgerPage(),
-    ),
     BookingPage(),
     PromotionsPage(),
     CRMPage(),
-    InventoryPage()
+    InventoryPage(),
+    ServicePage(),
   ];
 
   // Shortcut icons and their actions
@@ -106,6 +96,11 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
       color: Colors.green,
       size: 24.0,
     ),
+    // const HugeIcon(
+    //   icon: HugeIcons.strokeRoundedActivity0,
+    //   color: Colors.blue,
+    //   size: 24.0,
+    // ),
   ];
 
   List<VoidCallback> _shortcutActions(BuildContext context) {

@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../services/services_section.dart' as services_section;
-import '../services/products_section.dart' as products_section;
+import '../section/services_section.dart' as services_section;
+import '../section/products_section.dart' as products_section;
 import '../premium/highlights_premium.dart';
 import '../premium/follower_like_rating.dart';
 import '../../utils/moving_text.dart';
