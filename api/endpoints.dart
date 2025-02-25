@@ -18,11 +18,6 @@ class Endpoints {
 
   static const String check_domain = '/bs/domain';
 
-  //Business Main Page
-  static const String getPosts = '/bs/posts';
-  static const String getServices = '/bs/services';
-  // static const String getProducts = '/bs/products';
-
   static const String refresh_token = '/bs/auth/refresh';
 
   //Notification
@@ -41,4 +36,13 @@ class Endpoints {
   static const String editOrder='/bs/orders';
   static const String deleteOrder='/bs/orders';
 
+  //Customer Management
+  static const String getCustomers='/bs/bs_customer';
+  static const String editCustomer='/bs/bs_customers';
+  static const String deleteCustomer='/bs/bs_customer';
+
+  //Service Management
+  static const String getServices='/bs/service';
+  static const String editService='/bs/services';
+  static const String deleteService='/bs/service';
 }

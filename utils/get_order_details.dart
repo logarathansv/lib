@@ -63,7 +63,13 @@ class _ServiceSelectionDialogState extends State<ServiceSelectionDialog> {
               items: widget.existingCustomers.map((customer) {
                 return DropdownMenuItem<Customer>(
                   value: customer,
-                  child: Text(customer.name),
+                  child: Row(
+                    children: [
+                      Text(customer.name),
+                      const SizedBox(width: 10),
+                      Text(customer.email),
+                    ],
+                  ),
                 );
               }).toList(),
               onChanged: (customer) {
@@ -148,7 +154,7 @@ class _ServiceSelectionDialogState extends State<ServiceSelectionDialog> {
                 address: addressController.text,
                 phoneNumber: phoneController.text,
                 email: emailController.text,
-                labelColor: Colors.blue, // Default color
+                createdAt: DateTime.now().toString(), // Default color
               );
             } else {
               customerToReturn = selectedCustomer!;

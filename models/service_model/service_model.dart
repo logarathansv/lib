@@ -23,4 +23,11 @@ class Service{
       price: json['ServiceCost'],
     );
   }
+  //to json fuction
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'description': description,
+    'imageUrl': imageUrl,
+    'price': price,
+  };
 }

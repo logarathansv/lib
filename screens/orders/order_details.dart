@@ -93,7 +93,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             address: widget.order.customerAddress,
                             email: widget.order.customerEmail,
                             phoneNumber: widget.order.customerMobile,
-                            labelColor: Colors.blue,
+                            createdAt: DateTime.now().toString(),
                           ),
                         ),
                       ),

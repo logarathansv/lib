@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:sklyit_business/screens/service/service_screen.dart';
 import 'package:sklyit_business/screens/tools/tools_store.dart';
 
 import '../booking_management/booking_list.dart';
@@ -23,7 +24,8 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
     "Bookings",
     "Promotions",
     "CRM",
-    "Inventory"
+    "Inventory",
+    "Services"
   ];
   final List<HugeIcon> _icons = [
     const HugeIcon(
@@ -55,6 +57,11 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
       icon: HugeIcons.strokeRoundedWarehouse,
       color: Color(0xfff4c345),
       size: 24.0,
+    ),
+    const HugeIcon(
+      icon: HugeIcons.strokeRoundedActivity01,
+      color: Colors.blue,
+      size: 24.0,
     )
   ];
   final List<Widget> _pages = [
@@ -63,7 +70,8 @@ class _ShowToolsPageState extends State<ShowToolsPage> {
     BookingPage(),
     PromotionsPage(),
     CRMPage(),
-    InventoryPage()
+    InventoryPage(),
+    ServicePage(),
   ];
 
   // Shortcut icons and their actions

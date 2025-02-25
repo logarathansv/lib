@@ -95,7 +95,7 @@ class _AddCustomerPageState extends ConsumerState<AddCustomerPage> {
         error: (error, stackTrace) {
           print("Error Loading customers: $error");
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const CircularProgressIndicator(),
       )
     );
   }

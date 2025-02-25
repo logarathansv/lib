@@ -1,114 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
-import '../../models/product_model/product_model.dart';
-import '../../providers/product_provider.dart';
-import '../../utils/add_product_dialog.dart';
-import '../../widgets/product_card.dart';
+import 'package:sklyit_business/models/service_model/service_model.dart';
+import '../../providers/service_provider.dart';
+import '../../utils/service_dialog.dart';
+import '../../widgets/service_card.dart';
 
-class InventoryPage extends ConsumerStatefulWidget {
-  final bool autoTriggerAddProduct;
+class ServicePage extends ConsumerStatefulWidget {
+  final bool autoTriggerAddService;
 
-  const InventoryPage({super.key, this.autoTriggerAddProduct = false});
+  const ServicePage({super.key, this.autoTriggerAddService = false});
 
   @override
-  _InventoryPageState createState() => _InventoryPageState();
+  _ServicePageState createState() => _ServicePageState();
 }
 
-class _InventoryPageState extends ConsumerState<InventoryPage> {
-  List<Product> products = [];
+class _ServicePageState extends ConsumerState<ServicePage> {
+  List<Service> services = [];
   final _searchController = TextEditingController();
-  List<Product> _searchResults = [];
+  List<Service> _searchResults = [];
   String _filterType = 'All'; // Default filter
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      getProducts();
+      getServices();
     });
   }
-  Future<void> getProducts() async {
-      final productsAsync = ref.watch(getProductsProvider);
-      productsAsync.when(
-        data: (fetchedProducts) {
+    void getServices() async{
+      final servicesAsync = ref.watch(getServicesProvider);
+      servicesAsync.when(
+        data: (fetchedServices){
           setState(() {
-            products = fetchedProducts;
+            services=fetchedServices;
           });
         },
-        error: (error, stackTrace) {
-          print("Error loading products: $error");
+        error: (error,stackTrace){
+          print("Error Loading services: $error");
           return [];
         },
-        loading: () => CircularProgressIndicator(),
+        loading:
+            ()=>CircularProgressIndicator(),
       );
     }
 
-  void _addProduct() async {
+  void _addService() async {
     await showDialog(
       context: context,
-      builder: (context) => AddProductDialog(
-        onProductAdded: (product) {
-          ref.invalidate(getProductsProvider);
+      builder: (context) => ServiceDialog(
+        onServiceAdded: (service) {
+          ref.invalidate(getServicesProvider);
         },
-        onProductUpdated: (product) {},
+        onServiceUpdated: (service) {},
       ),
     );
   }
 
 
-  void _editProduct(Product product) async {
+  void _editService(Service service) async {
     await showDialog(
       context: context,
-      builder: (context) => AddProductDialog(
-        product: product,
-        onProductUpdated: (updatedProduct) {
+      builder: (context) => ServiceDialog(
+        service: service,
+        onServiceUpdated: (updatedService) {
           setState(() {
             // Instead of modifying the existing product, replace it in the list
-            int index = products.indexWhere((p) => p.id == product.id);
+            int index = services.indexWhere((p) => p.Sid == service.Sid);
             if (index != -1) {
-              products[index] = Product(
-                id: updatedProduct.id,
-                name: updatedProduct.name,
-                description: updatedProduct.description,
-                price: updatedProduct.price,
-                quantity: updatedProduct.quantity,
-                imageUrl: updatedProduct.imageUrl, // Ensure image is not lost
+              services[index] = Service(
+                Sid: updatedService.Sid,
+                name: updatedService.name,
+                description: updatedService.description,
+                price: updatedService.price,
+                imageUrl: updatedService.imageUrl,// Ensure image is not lost
               );
             }
           });
-
-          ref.invalidate(getProductsProvider);
+          ref.invalidate(getServicesProvider);
         },
-        onProductAdded: (updatedProduct) {},
+        onServiceAdded: (updatedService) {},
       ),
     );
   }
 
 
-  void _deleteProduct(int index) async {
-    final product = products[index];
+  void _deleteService(int index) async {
+    final service = services[index];
 
     try {
-      await ref.read(productApiProvider.future).then((productService) {
-        return productService.deleteProduct(product.id!);
+      await ref.read(serviceServiceProvider.future).then((serviceService) {
+        return serviceService.deleteService(service.Sid!);
       });
 
-      ref.invalidate(getProductsProvider); // Ensure list is reloaded
+      ref.invalidate(getServicesProvider); // Ensure list is reloaded
 
       setState(() {
-        products.removeAt(index); // Remove product after deletion
+        services.removeAt(index); // Remove service after deletion
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${product.name} deleted successfully')),
+        SnackBar(content: Text('${service.name} deleted successfully')),
       );
     } catch (e) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Error'),
-          content: Text('Failed to delete product: $e'),
+          content: Text('Failed to delete Service: $e'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -123,7 +122,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(getProductsProvider);
+    final productsAsync = ref.watch(getServicesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -138,7 +137,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           ),
         ),
         title: const Text(
-          'Inventory',
+          'Services',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -147,9 +146,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         ),
       ),
       body: productsAsync.when(
-        data: (fetchedProducts) {
-          products = fetchedProducts; // Update the local products list
-          return _buildProductList();
+        data: (fetchedServices) {
+          services = fetchedServices; // Update the local services list
+          return _buildServiceList();
         },
         error: (error, stackTrace) => Center(child: Text("Error: $error")),
         loading: () => Center(child: CircularProgressIndicator()),
@@ -157,7 +156,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
   }
 
-  Widget _buildProductList() {
+  Widget _buildServiceList() {
     return Stack(
       children: [
         Column(
@@ -193,13 +192,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                       scrollDirection: Axis.horizontal,
                       children: [
                         _buildFilterTag('All'),
-                        _buildFilterTag('Empty Stock'),
-                        _buildFilterTag('Low Stock'),
-                        _buildFilterTag('High Stock'),
                         _buildFilterTag('Price: Low to High'),
                         _buildFilterTag('Price: High to Low'),
-                        _buildFilterTag('Quantity: Low to High'),
-                        _buildFilterTag('Quantity: High to Low'),
                       ],
                     ),
                   ),
@@ -209,16 +203,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             Expanded(
               child: ListView.builder(
                 itemCount: _searchResults.isEmpty
-                    ? _getFilteredProducts().length
+                    ? _getFilteredServices().length
                     : _searchResults.length,
                 itemBuilder: (context, index) {
-                  final product = _searchResults.isEmpty
-                      ? _getFilteredProducts()[index]
+                  final service = _searchResults.isEmpty
+                      ? _getFilteredServices()[index]
                       : _searchResults[index];
-                  return ProductCard(
-                    product: product,
-                    onEdit: () => _editProduct(product),
-                    onDelete: () => _deleteProduct(index),
+                  return ServiceCard(
+                    service: service,
+                    onEdit: () => _editService(service),
+                    onDelete: () => _deleteService(index),
                   );
                 },
               ),
@@ -230,7 +224,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           bottom: 25,
           right: 20,
           child: ElevatedButton(
-            onPressed: _addProduct,
+            onPressed: _addService,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xfff4c345),
               shape: RoundedRectangleBorder(
@@ -262,7 +256,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color:
-              _filterType == label ? const Color(0xfff4c345) : Colors.grey[300],
+          _filterType == label ? const Color(0xfff4c345) : Colors.grey[300],
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -277,38 +271,26 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   }
 
   // Filter products based on the selected filter type
-  List<Product> _getFilteredProducts() {
+  List<Service> _getFilteredServices() {
     // return products;
     switch (_filterType) {
-      case 'Empty Stock':
-        return products.where((product) => product.quantity == '0').toList();
-      case 'Low Stock':
-        return products.where((product) => int.parse(product.quantity) <= 5).toList();
-      case 'High Stock':
-        return products.where((product) => int.parse(product.quantity) > 5).toList();
       case 'Price: Low to High':
-        return List.from(products)..sort((a, b) => double.parse(a.price).compareTo(double.parse(b.price)));
+        return List.from(services)..sort((a, b) => double.parse(a.price).compareTo(double.parse(b.price)));
       case 'Price: High to Low':
-        return List.from(products)..sort((a, b) => double.parse(b.price).compareTo(double.parse(a.price)));
-      case 'Quantity: Low to High':
-        return List.from(products)
-          ..sort((a, b) => int.parse(a.quantity).compareTo(int.parse(b.quantity)));
-      case 'Quantity: High to Low':
-        return List.from(products)
-          ..sort((a, b) => int.parse(b.quantity).compareTo(int.parse(a.quantity)));
+        return List.from(services)..sort((a, b) => double.parse(b.price).compareTo(double.parse(a.price)));
       default:
-        return products;
+        return services;
     }
   }
 
   void _searchProducts() {
     setState(() {
-      _searchResults = products
-          .where((product) =>
-      product.name
+      _searchResults = services
+          .where((service) =>
+      service.name
           .toLowerCase()
           .contains(_searchController.text.toLowerCase()) ||
-          (product.description?.toLowerCase() ?? "")
+          (service.description?.toLowerCase() ?? "")
               .contains(_searchController.text.toLowerCase()))
           .toList();
     });

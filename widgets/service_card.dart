@@ -1,15 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../models/product_model/product_model.dart';
+import '../models/service_model/service_model.dart';
 
-class ProductCard extends StatelessWidget {
-  final Product product;
+class ServiceCard extends StatelessWidget {
+  final Service service;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const ProductCard({
+  const ServiceCard({
     super.key,
-    required this.product,
+    required this.service,
     required this.onEdit,
     required this.onDelete,
   });
@@ -35,7 +35,7 @@ class ProductCard extends StatelessWidget {
                   bottomLeft: Radius.circular(12),
                 ),
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(product.imageUrl ?? 'https://via.placeholder.com/300') as ImageProvider,
+                  image: CachedNetworkImageProvider(service.imageUrl ?? 'https://via.placeholder.com/300') as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -49,7 +49,7 @@ class ProductCard extends StatelessWidget {
                   children: [
                     // Product Name
                     Text(
-                      product.name,
+                      service.name,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -60,7 +60,7 @@ class ProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     // Product Description
                     Text(
-                      product.description!,
+                      service.description!,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[700],
@@ -74,20 +74,14 @@ class ProductCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '₹${product.price}',
+                          '₹${service.price}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.green,
                           ),
                         ),
-                        Text(
-                          'Qty: ${product.quantity}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
+
                       ],
                     ),
                     const SizedBox(height: 8),

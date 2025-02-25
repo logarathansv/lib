@@ -1,5 +1,9 @@
 class Endpoints {
+<<<<<<< HEAD
   static const String BASEURL = 'http://192.168.166.41:3000';
+=======
+  static const String BASEURL = 'http://192.168.255.85:3000';
+>>>>>>> 7061123e75fa2214206d0ee9c9c2fb8b24a8dfe4
 
   static const String users = '/users';
 
@@ -11,11 +15,14 @@ class Endpoints {
   static const String get_personal_details = '/users';
   static const String update_personal_details = '/users/updateUser';
 
+<<<<<<< HEAD
   static const String business_details = '/bs/clients';
   static const String add_address = '/address/add';
   static const String update_address = '/address';
   static const String delete_address = '/address/delete';
 
+=======
+>>>>>>> 7061123e75fa2214206d0ee9c9c2fb8b24a8dfe4
   static const String check_domain = '/bs/domain';
 
   //Business Main Page
@@ -41,4 +48,11 @@ class Endpoints {
   static const String editOrder='/bs/orders';
   static const String deleteOrder='/bs/orders';
 
+<<<<<<< HEAD
+=======
+  //Customer Management
+  static const String getCustomers='/bs/bs_customer';
+  static const String editCustomer='/bs/bs_customers';
+  static const String deleteCustomer='/bs/bs_customer';
+>>>>>>> 7061123e75fa2214206d0ee9c9c2fb8b24a8dfe4
 }

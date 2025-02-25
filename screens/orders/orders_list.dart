@@ -5,6 +5,7 @@ import '../../models/customer_model/customer_class.dart';
 import '../../models/order_model/order_model.dart';
 import '../../models/product_model/product_model.dart'; // Import the Product class
 import '../../models/service_model/service_model.dart';
+import '../../providers/customer_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/service_provider.dart';
@@ -99,20 +100,20 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
   }
 
   void getCustomers() async{
-    // final customersAsync = ref.watch(getCustomersProvider);
-    // customersAsync.when(
-    //   data: (fetchedCustomers){
-    //     setState(() {
-    //       customers=fetchedCustomers;
-    //     });
-    //   },
-    //   error: (error,stackTrace){
-    //     print("Error Loading customers: $error");
-    //     return [];
-    //   },
-    //   loading:
-    //   ()=>CircularProgressIndicator(),
-    // );
+    final customersAsync = ref.watch(getCustomerProvider);
+    customersAsync.when(
+      data: (fetchedCustomers){
+        setState(() {
+          customers=fetchedCustomers;
+        });
+      },
+      error: (error,stackTrace){
+        print("Error Loading customers: $error");
+        return [];
+      },
+      loading:
+      ()=>CircularProgressIndicator(),
+    );
   }
 
 

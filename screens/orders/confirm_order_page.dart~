@@ -78,7 +78,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                   setState(() {
                     _selectedCustomer = value;
                     if (value != null) {
-                      _customerNameController.text = value.custId.toString();
+                      _customerNameController.text = value.name;
                     }
                   });
                 },
