@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -78,21 +77,19 @@ class _EditPageState extends ConsumerState<EditPage> {
       "addressCity": cityController.text,
       "addressState": stateController.text,
       "addressPincode": pincodeController.text,
-      if(file != null) "image": file
     };
-    // final updateApi = await UpdateProfileAPIService().updateUserProfile(updatedata).then((_) async => await uploadProfilePicAPIService().uploadPhoto(filePath!));
     final updateApi = await ref.read(fetchProfileAPI).updateProfile(updatedata, file);
     print(updateApi);
     if(updateApi == 'Profile Updated Successfully'){
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Profile Updated !'), backgroundColor: Colors.teal,)
+          SnackBar(content: Text('Profile Updated !'), backgroundColor: Colors.teal, behavior: SnackBarBehavior.floating,)
       );
       ref.invalidate(userProfileProvider);
       Navigator.pop(context);
     }
     else{
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error Updating Profile !'), backgroundColor: Colors.redAccent,)
+          SnackBar(content: Text('Error Updating Profile !'), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating,)
       );
     }
   }

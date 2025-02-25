@@ -74,6 +74,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                 price: updatedProduct.price,
                 quantity: updatedProduct.quantity,
                 imageUrl: updatedProduct.imageUrl, // Ensure image is not lost
+                units: updatedProduct.units
               );
             }
           });

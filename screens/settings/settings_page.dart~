@@ -75,13 +75,13 @@ class SettingsPage extends ConsumerWidget {
             SizedBox(height: 15),// Space between header and buttons
             _buildButton(
               context,
-              'Professional Settings',
+              'Business Settings',
               'Change Availability Timings, Services, Certificates',
               HugeIcons.strokeRoundedPowerService,
                   () {
                 Navigator.push(
                   context,
-                  _createRoute(DisplayProfile()),
+                  _createRoute(BusinessProfileViewPage()),
                 );
               },
             ),
@@ -172,7 +172,7 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         onPressed: () async {
                           await LogoutAPIService(ref.watch(apiClientProvider).dio).logout();
-                          onLogout();
+                          // onLogout();
                           SystemNavigator.pop();
                           // Navigator.pushAndRemoveUntil(
                           //   context,
