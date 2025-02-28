@@ -8,4 +8,7 @@ final getCustomerProvider = FutureProvider<List<Customer>>((ref) async{
   return await CustomerService(ref.watch(apiClientProvider).dio).getCustomers();
 });
 
+final getPastServiceProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, custId) async{
+  return await CustomerService(ref.watch(apiClientProvider).dio).getPastServices(custId);
+});
 final customerServiceProvider = FutureProvider<CustomerService>((ref) => CustomerService(ref.watch(apiClientProvider).dio));

@@ -89,11 +89,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       MaterialPageRoute(
                         builder: (context) => CustomerDetailsPage(
                           customer: Customer(
+                            custId: widget.order.customerId,
                             name: widget.order.customerName,
                             address: widget.order.customerAddress,
                             email: widget.order.customerEmail,
                             phoneNumber: widget.order.customerMobile,
-                            createdAt: DateTime.now().toString(),
+                            createdAt: widget.order.customerCreatedAt,
                           ),
                         ),
                       ),

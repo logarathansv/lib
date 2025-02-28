@@ -8,6 +8,7 @@ import '../../models/service_model/service_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/order_provider.dart';
+import '../customers/get_customer_details.dart';
 
 class ConfirmOrderPage extends ConsumerStatefulWidget {
   final List<Service> selectedServices;
@@ -71,7 +72,17 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 items: widget.existingCustomers.map((Customer customer) {
                   return DropdownMenuItem<Customer>(
                     value: customer,
-                    child: Text(customer.name),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          customer.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(customer.email),
+                        Text(customer.phoneNumber),
+                      ],
+                    ),
                   );
                 }).toList(),
                 onChanged: (Customer? value) {
@@ -90,19 +101,32 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 'Or Add New Customer:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+              // const SizedBox(height: 8),
+              // TextFormField(
+              //   controller: _customerNameController,
+              //   decoration: const InputDecoration(
+              //     labelText: 'Customer Name',
+              //     border: OutlineInputBorder(),
+              //   ),
+              //   validator: (value) {
+              //     if (value == null || value.isEmpty) {
+              //       return 'Please enter a customer name';
+              //     }
+              //     return null;
+              //   },
+              //   enabled: false,
+              // ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _customerNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Customer Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a customer name';
-                  }
-                  return null;
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddNewCustomerPage(),
+                    ),
+                  );
                 },
+                child: const Text('Add New Customer'),
               ),
               const SizedBox(height: 16),
 

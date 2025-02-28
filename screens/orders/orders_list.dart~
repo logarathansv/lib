@@ -46,22 +46,26 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
     }
   }
 
-
-  void getServices() async{
-    final servicesAsync = ref.watch(getServicesProvider);
-    servicesAsync.when(
-      data: (fetchedServices){
+  void getOrders() async{
+    final ordersAsync = ref.watch(getOrdersProvider);
+    ordersAsync.when(
+      data: (fetchedOrders){
         setState(() {
-          services=fetchedServices;
+          orders=fetchedOrders;
         });
       },
       error: (error,stackTrace){
-        print("Error Loading services: $error");
+        print("Error Loading orders: $error");
         return [];
       },
       loading:
-          ()=>CircularProgressIndicator(),
+      ()=>CircularProgressIndicator(),
     );
+    print('orders: $orders');
+  }
+
+  void getServices() async{
+
   }
 
   void getProducts() async{
@@ -120,7 +124,7 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ordersAsync = ref.watch(getOrdersProvider);
+    final servicesAsync = ref.watch(getServicesProvider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xfff4c345),
@@ -142,10 +146,12 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
           ),
         ),
       ),
-      body: ordersAsync.when(
+      body:
+    servicesAsync.when(
       data: (fetchedServices){
-        orders=fetchedServices;
-        return _buildOrdersList();
+        setState(() {
+          services=fetchedServices;
+        });
       },
       error: (error,stackTrace){
         print("Error Loading services: $error");

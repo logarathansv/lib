@@ -1,11 +1,9 @@
-
 import 'package:dio/dio.dart';
 import 'package:sklyit_business/models/customer_model/customer_class.dart';
-
 import '../endpoints.dart';
 
 class CustomerService {
-  CustomerService(this._dio);
+  CustomerService(Dio dio) : _dio = dio;
   final Dio _dio;
 
   Future<List<Customer>> getCustomers() async{
@@ -67,6 +65,22 @@ class CustomerService {
       }
     }catch(error){
       throw Exception("Failed to edit Customer:$error");
+    }
+  }
+
+  Future<List<Map<String,dynamic>>> getPastServices(String custId) async{
+    try{
+      final response = await _dio.get(
+          '${Endpoints.getPastServices}/$custId'
+      );
+      if(response.statusCode == 200){
+        print(response.data);
+        return List<Map<String, dynamic>>.from(response.data);
+      }else{
+        throw Exception("Failed to load Past Services");
+      }
+    }catch(error){
+      throw Exception("Failed to load Past Services:$error");
     }
   }
 }

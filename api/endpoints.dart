@@ -40,4 +40,7 @@ class Endpoints {
   static const String getServices='/bs/service';
   static const String editService='/bs/services';
   static const String deleteService='/bs/service';
+
+  //CRM
+  static const String getPastServices='/bs/past_services';
 }

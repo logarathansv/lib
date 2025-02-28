@@ -164,7 +164,7 @@ class _CustomerDetailsPageState extends ConsumerState<CustomerDetailsPage> {
                 Text(
                     'Time: ${DateTime.parse(service['date']).toIso8601String().split('T').last.substring(0, 5)}',
                     style: const TextStyle(color: Color(0xFF2f4757))),
-                Text('Type: ${service['servicename']}',
+                Text('Type: ${service['services']}',
                     style: const TextStyle(color: Color(0xFF2f4757))),
               ],
             ),
