@@ -78,7 +78,7 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
     super.initState();
     Future.delayed(Duration(seconds: 5));
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => initialization(),);
+    initialization();
     _checkInternetOnStart();
     _listenForInternetChanges();
   }
@@ -162,7 +162,7 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> initialization() async {
+  void initialization() async {
     await verifyLogin();
     (logged) ? {uid = (await storage.read(key: 'userId'))!, SocketService().initialize(uid)} : null;
   }
@@ -197,7 +197,16 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
           ),
         ),
       ),
-      home: (isValid && logged) ? PersonalCareBusinessPage() : LoginPage()
+      home: (isValid && logged) ? PersonalCareBusinessPage() : LoginPage(), // Show the PreloaderScreen first
+      routes: {
+        '/home': (context) => const PersonalCareBusinessPage(),
+        '/login': (context) => LoginPage(),
+      },
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const PersonalCareBusinessPage(),
+        );
+      },
     );
   }
 }

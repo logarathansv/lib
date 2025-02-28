@@ -6,7 +6,7 @@ import 'package:sklyit_business/screens/settings/personal_details.dart';
 import 'package:sklyit_business/screens/settings/subscription_page.dart';
 import '../../api/auth_api/logout_api.dart';
 import '../../providers/business_main.dart';
-import 'display_profile.dart';
+import 'business_display_profile.dart';
 import 'help_page.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -75,13 +75,13 @@ class SettingsPage extends ConsumerWidget {
             SizedBox(height: 15),// Space between header and buttons
             _buildButton(
               context,
-              'Professional Settings',
+              'Business Settings',
               'Change Availability Timings, Services, Certificates',
               HugeIcons.strokeRoundedPowerService,
                   () {
                 Navigator.push(
                   context,
-                  _createRoute(DisplayProfile()),
+                  _createRoute(BusinessProfileViewPage()),
                 );
               },
             ),
