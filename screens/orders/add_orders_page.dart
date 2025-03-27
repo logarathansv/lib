@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../models/customer_model/customer_class.dart';
@@ -23,8 +25,12 @@ class AddOrderPage extends StatefulWidget {
 
 class _AddOrderPageState extends State<AddOrderPage> {
   final _formKey = GlobalKey<FormState>();
+  final Map<Service, int> _serviceQuantities = {};
+  Map<Product, int> _productQuantities = {};
   final List<Service> _selectedServices = [];
+  int _selectedServiceQuantity=1;
   final List<Product> _selectedProducts = [];
+  int _selectedProductQuantity=1;
   DateTime? _selectedDate;
 
   @override
@@ -66,21 +72,85 @@ class _AddOrderPageState extends State<AddOrderPage> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: widget.services.map((service) {
-                  return CheckboxListTile(
-                    title: Text(service.name),
-                    value: _selectedServices.contains(service),
-                    onChanged: (value) {
-                      setState(() {
-                        if (value == true) {
-                          _selectedServices.add(service);
-                        } else {
-                          _selectedServices.remove(service);
-                        }
-                      });
-                    },
+                  return Column(
+                    children: [
+                      CheckboxListTile(
+                        title: Text(service.name),
+                        value: _selectedServices.contains(service),
+                        onChanged: (value) {
+                          setState(() {
+                            if (value == true) {
+                              _selectedServices.add(service);
+                              _serviceQuantities[service] = 1;
+                            } else {
+                              _selectedServices.remove(service);
+                              _serviceQuantities.remove(service);
+                            }
+                          });
+                        },
+                      ),
+                      if (_selectedServices.contains(service))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              const Text('Quantity:'),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: IconButton(
+                                  icon: const Icon(Icons.remove, size: 16),
+                                  onPressed: () {
+                                    setState(() {
+                                      if (_serviceQuantities[service]! > 1) {
+                                        _serviceQuantities[service] = _serviceQuantities[service]! - 1;
+                                      }
+                                    });
+                                  },
+                                  color: Colors.grey,
+                                  splashRadius: 15,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 40,
+                                child: TextFormField(
+                                  textAlign: TextAlign.center,
+                                  decoration: const InputDecoration(border: OutlineInputBorder()),
+                                  keyboardType: TextInputType.number,
+                                  controller: TextEditingController(text: _serviceQuantities[service].toString()),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      final quantity = int.tryParse(value);
+                                      if (quantity != null && quantity > 0) {
+                                        _serviceQuantities[service] = quantity;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                              SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: IconButton(
+                                  icon: const Icon(Icons.add, size: 16),
+                                  onPressed: () {
+                                    setState(() {
+                                      _serviceQuantities[service] = _serviceQuantities[service]! + 1;
+                                    });
+                                  },
+                                  color: Colors.grey,
+                                  splashRadius: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   );
                 }).toList(),
-              ),
+              )
+              ,
 
               // Products
               const SizedBox(height: 16),
@@ -102,31 +172,75 @@ class _AddOrderPageState extends State<AddOrderPage> {
                           setState(() {
                             if (value == true) {
                               _selectedProducts.add(product);
+                              _productQuantities[product] = 1;
                             } else {
                               _selectedProducts.remove(product);
+                              _productQuantities.remove(product);
                             }
                           });
                         },
                       ),
                       if (_selectedProducts.contains(product))
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16),
-                          child: TextFormField(
-                            initialValue: '1',
-                            decoration: const InputDecoration(
-                              labelText: 'Quantity',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              const Text('Quantity:'),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: IconButton(
+                                  icon: const Icon(Icons.remove, size: 16),
+                                  onPressed: () {
+                                    setState(() {
+                                      if (_productQuantities[product]! > 1) {
+                                        _productQuantities[product] = _productQuantities[product]! - 1;
+                                      }
+                                    });
+                                  },
+                                  color: Colors.grey,
+                                  splashRadius: 15,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 40,
+                                child: TextFormField(
+                                  textAlign: TextAlign.center,
+                                  decoration: const InputDecoration(border: OutlineInputBorder()),
+                                  keyboardType: TextInputType.number,
+                                  controller: TextEditingController(text: _productQuantities[product].toString()),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      final quantity = int.tryParse(value);
+                                      if (quantity != null && quantity > 0) {
+                                        _productQuantities[product] = quantity;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                              SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: IconButton(
+                                  icon: const Icon(Icons.add, size: 16),
+                                  onPressed: () {
+                                    setState(() {
+                                      _productQuantities[product] = _productQuantities[product]! + 1;
+                                    });
+                                  },
+                                  color: Colors.grey,
+                                  splashRadius: 15,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],
                   );
                 }).toList(),
               ),
-
               // Date Picker
               const SizedBox(height: 16),
               ElevatedButton(
@@ -177,6 +291,8 @@ class _AddOrderPageState extends State<AddOrderPage> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ConfirmOrderPage(
+            serviceQuantities:_serviceQuantities,
+            productQuantities:_productQuantities,
             selectedServices: _selectedServices,
             selectedProducts: _selectedProducts,
             selectedDate: _selectedDate!,

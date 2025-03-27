@@ -312,7 +312,7 @@ class BookingCard extends ConsumerWidget {
                                   },
                                   child: Text(
                                     'Accept',
-                                    style: TextStyle(color: Colors.green),
+                                    style: TextStyle(color: Colors.red),
                                   ),
                                 ),
                               ],

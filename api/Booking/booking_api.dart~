@@ -30,7 +30,7 @@ class BookingService {
     try{
       final response = await _dio.put(
           '${Endpoints.editBooking}/${booking.BookingId}',
-          data: {'Status':booking.status}
+          data: {'Sbooking.status}
       );
       if(response.statusCode == 200){
         print('Booking updated successfully!');

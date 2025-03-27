@@ -36,9 +36,6 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => getServices());
-    WidgetsBinding.instance.addPostFrameCallback((_) => getProducts());
-    WidgetsBinding.instance.addPostFrameCallback((_) => getCustomers());
     if (widget.autoTriggerAddOrder) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateToAddOrderPage();
@@ -145,6 +142,9 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
       body: ordersAsync.when(
       data: (fetchedServices){
         orders=fetchedServices;
+        getServices();
+        getProducts();
+        getCustomers();
         return _buildOrdersList();
       },
       error: (error,stackTrace){

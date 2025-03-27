@@ -168,7 +168,11 @@ class BookingList extends ConsumerWidget {
                   )
                 },
                 child: BookingCard(
-                  booking: booking,
+                  customerName: booking.customerName,
+                  services: booking.service['ServiceName'] as String,
+                  date: booking.date,
+                  time: booking.time,
+                  bookingType: bookingType,
                 ),
               ),
           ],

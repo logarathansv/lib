@@ -88,12 +88,11 @@ class CreateOrder{
    String customerId;
    List<Map<String, dynamic>>? services;
    List<Map<String, dynamic>>? products;
-   DateTime? orderDate = DateTime.now();
+
   CreateOrder({
   required this.customerId,
   this.services,
-  this.products,
-    this.orderDate
+  this.products
   });
 
   Map<String, dynamic> toJson() {
@@ -101,7 +100,6 @@ class CreateOrder{
     "custid": customerId.toString(),
     "services": services!,
     "products": products!,
-      "ODate": orderDate.toString(),
     };
   }
 }
