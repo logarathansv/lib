@@ -34,7 +34,7 @@ class Booking {
       time: json['ServiceTime'],
       serviceMode: json['BookedMode'],
       status: json['Status'],
-      address: json['customer']['addressCity'],
+      address: json['customer']['addressStreet'] +','+ json['customer']['addressCity'],
     );
   }
 }

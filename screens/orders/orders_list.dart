@@ -36,10 +36,6 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => getOrders());
-    WidgetsBinding.instance.addPostFrameCallback((_) => getServices());
-    WidgetsBinding.instance.addPostFrameCallback((_) => getProducts());
-    WidgetsBinding.instance.addPostFrameCallback((_) => getCustomers());
     if (widget.autoTriggerAddOrder) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateToAddOrderPage();
@@ -47,23 +43,6 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
     }
   }
 
-  void getOrders() async{
-    final ordersAsync = ref.watch(getOrdersProvider);
-    ordersAsync.when(
-      data: (fetchedOrders){
-        setState(() {
-          orders=fetchedOrders;
-        });
-      },
-      error: (error,stackTrace){
-        print("Error Loading orders: $error");
-        return [];
-      },
-      loading:
-      ()=>CircularProgressIndicator(),
-    );
-    print('orders: $orders');
-  }
 
   void getServices() async{
     final servicesAsync = ref.watch(getServicesProvider);
@@ -78,7 +57,7 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
         return [];
       },
       loading:
-      ()=>CircularProgressIndicator(),
+          ()=>CircularProgressIndicator(),
     );
   }
 
@@ -138,6 +117,7 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final ordersAsync = ref.watch(getOrdersProvider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xfff4c345),
@@ -159,113 +139,128 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Search Bar
-            _buildSearchBar(),
-            const SizedBox(height: 16),
-
-            // Filter Tags
-            SizedBox(
-              height: 40,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildFilterTag('All'),
-                  _buildFilterTag('Recent'),
-                  _buildFilterTag('Old'),
-                  _buildFilterTag('Amount: Low to High'),
-                  _buildFilterTag('Amount: High to Low'),
-                  _buildFilterTag('Date: Oldest First'),
-                  _buildFilterTag('Date: Newest First'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Add Order Button
-            ElevatedButton.icon(
-              onPressed: () async {
-                // Navigate to the AddOrderPage
-                final newOrder = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddOrderPage(
-                      services: services,
-                      products: products, // Pass the products list
-                      existingCustomers: customers,
-                    ),
-                  ),
-                );
-
-                // If a new order is returned, add it to the list
-                if (newOrder != null) {
-                  setState(() {
-                    orders.add(newOrder);
-                  });
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2f4757),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Add Order',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Orders List
-            Expanded(
-              child: ListView.builder(
-                itemCount: _searchResults.isEmpty
-                    ? _getFilteredOrders().length
-                    : _searchResults.length,
-                itemBuilder: (context, index) {
-                  final order = _searchResults.isEmpty
-                      ? _getFilteredOrders()[index]
-                      : _searchResults[index];
-                  return GestureDetector(
-                    onTap: () => {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  OrderDetailsPage(order: order),
-                          transitionDuration: const Duration(milliseconds: 200),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(1, 0),
-                                end: const Offset(0, 0),
-                              ).animate(animation),
-                              child: child,
-                            );
-                          },
-                        ),
-                      )
-                    },
-                    child: _buildOrderCard(order, context),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: ordersAsync.when(
+      data: (fetchedServices){
+        orders=fetchedServices;
+        getServices();
+        getProducts();
+        getCustomers();
+        return _buildOrdersList();
+      },
+      error: (error,stackTrace){
+        print("Error Loading services: $error");
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+    ),
     );
   }
 
+  Widget _buildOrdersList() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Search Bar
+          _buildSearchBar(),
+          const SizedBox(height: 16),
+
+          // Filter Tags
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildFilterTag('All'),
+                _buildFilterTag('Recent'),
+                _buildFilterTag('Old'),
+                _buildFilterTag('Amount: Low to High'),
+                _buildFilterTag('Amount: High to Low'),
+                _buildFilterTag('Date: Oldest First'),
+                _buildFilterTag('Date: Newest First'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Add Order Button
+          ElevatedButton.icon(
+            onPressed: () async {
+              // Navigate to the AddOrderPage
+              final newOrder = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddOrderPage(
+                    services: services,
+                    products: products, // Pass the products list
+                    existingCustomers: customers,
+                  ),
+                ),
+              );
+
+              // If a new order is returned, add it to the list
+              if (newOrder != null) {
+                setState(() {
+                  orders.add(newOrder);
+                });
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2f4757),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Add Order',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Orders List
+          Expanded(
+            child: ListView.builder(
+              itemCount: _searchResults.isEmpty
+                  ? _getFilteredOrders().length
+                  : _searchResults.length,
+              itemBuilder: (context, index) {
+                final order = _searchResults.isEmpty
+                    ? _getFilteredOrders()[index]
+                    : _searchResults[index];
+                return GestureDetector(
+                  onTap: () => {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                            OrderDetailsPage(order: order),
+                        transitionDuration: const Duration(milliseconds: 200),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1, 0),
+                              end: const Offset(0, 0),
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    )
+                  },
+                  child: _buildOrderCard(order, context),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   // Search Bar
   Widget _buildSearchBar() {
     return Container(

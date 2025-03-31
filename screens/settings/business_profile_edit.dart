@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,7 +9,6 @@ import 'package:sklyit_business/models/profile_model/business_details_model.dart
 import 'package:sklyit_business/providers/business_main.dart';
 import 'package:sklyit_business/providers/profile_provider.dart';
 import 'package:textfield_tags/textfield_tags.dart';
-
 import '../../api/profile/business_profile_api.dart';
 
 class EditBusinessProfilePage extends ConsumerStatefulWidget {

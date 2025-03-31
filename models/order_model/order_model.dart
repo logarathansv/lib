@@ -3,10 +3,12 @@ class Order {
   String orderDate;
   List<Map<String, dynamic>> services;
   List<Map<String, dynamic>> products;
+  String customerId;
   String customerName;
   String customerMobile;
   String customerAddress;
   String customerEmail;
+  String customerCreatedAt;
   String totalAmount;
   String shopName;
   String shopAddress;
@@ -19,10 +21,12 @@ class Order {
     required this.orderDate,
     required this.services,
     required this.products,
+    required this.customerId,
     required this.customerName,
     required this.customerMobile,
     required this.customerAddress,
     required this.customerEmail,
+    required this.customerCreatedAt,
     required this.totalAmount,
     required this.shopName,
     required this.shopAddress,
@@ -63,10 +67,12 @@ class Order {
       orderDate: json['Odate'] as String,
       services: serviceList,
       products: productList,
+      customerId: json['customer']['CustId'] as String,
       customerName: json['customer']['Name'] as String,
       customerMobile: json['customer']['MobileNo'] as String,
       customerAddress: json['customer']['address'] as String,
       customerEmail: json['customer']['email'] as String,
+      customerCreatedAt: json['customer']['created_at'] as String,
       totalAmount: totalAmount.toString(),
       shopName: json['businessClient']['shopname'] as String,
       shopAddress: allCities,
@@ -82,11 +88,12 @@ class CreateOrder{
    String customerId;
    List<Map<String, dynamic>>? services;
    List<Map<String, dynamic>>? products;
-
+   DateTime? orderDate = DateTime.now();
   CreateOrder({
   required this.customerId,
   this.services,
-  this.products
+  this.products,
+    this.orderDate
   });
 
   Map<String, dynamic> toJson() {
@@ -94,6 +101,7 @@ class CreateOrder{
     "custid": customerId.toString(),
     "services": services!,
     "products": products!,
+      "ODate": orderDate.toString(),
     };
   }
 }

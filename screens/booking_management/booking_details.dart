@@ -9,9 +9,9 @@ class BookingDetailsPage extends StatelessWidget {
   final List<String> services;
   final String date;
   final String time;
-  final String address;
+  // final String address;
   final String serviceMode; // "At Home" or "At Place"
-  final bool isNewCustomer;
+  // final bool isNewCustomer;
 
   const BookingDetailsPage({
     super.key,
@@ -19,9 +19,9 @@ class BookingDetailsPage extends StatelessWidget {
     required this.services,
     required this.date,
     required this.time,
-    required this.address,
+    // required this.address,
     required this.serviceMode,
-    required this.isNewCustomer,
+    // required this.isNewCustomer,
   });
 
   @override
@@ -69,17 +69,17 @@ class BookingDetailsPage extends StatelessWidget {
                       time,
                     ),
                   ],
-                  isNewCustomer: isNewCustomer,
+                  // isNewCustomer: isNewCustomer,
                   context: context),
               const SizedBox(height: 16),
               _buildSectionCard(
                   title: 'Service Details',
                   details: [
                     _buildDetailRow('Service Mode', serviceMode),
-                    _buildDetailRow('Address', address),
+                    // _buildDetailRow('Address', address),
                     _buildDetailRow('Services', services.join(', ')),
                   ],
-                  isNewCustomer: isNewCustomer,
+                  // isNewCustomer: isNewCustomer,
                   context: context),
             ],
           ),
@@ -91,7 +91,7 @@ class BookingDetailsPage extends StatelessWidget {
   Widget _buildSectionCard(
       {required String title,
       required List<Widget> details,
-      required bool isNewCustomer,
+      // required bool isNewCustomer,
       required BuildContext context}) {
     List<Customer> customers = [
 
@@ -114,7 +114,7 @@ class BookingDetailsPage extends StatelessWidget {
               children: [
                 _buildSectionTitle(title), // Left-aligned title
                 const SizedBox(width: 10),
-                if (title == 'Customer Details' && isNewCustomer)
+                if (title == 'Customer Details' ) //&& isNewCustomer
                   IconButton(
                     onPressed: () => Navigator.push(
                         context,
@@ -127,7 +127,7 @@ class BookingDetailsPage extends StatelessWidget {
                       size: 24.0,
                     ),
                   )
-                else if (title == 'Customer Details' && !isNewCustomer)
+                else if (title == 'Customer Details')// && !isNewCustomer
                   IconButton(
                     onPressed: () => Navigator.push(
                         context,

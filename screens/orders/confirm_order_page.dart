@@ -8,16 +8,21 @@ import '../../models/service_model/service_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/order_provider.dart';
+import '../customers/get_customer_details.dart';
 
 class ConfirmOrderPage extends ConsumerStatefulWidget {
   final List<Service> selectedServices;
   final List<Product> selectedProducts;
   final DateTime selectedDate;
   final List<Customer> existingCustomers;
+  final Map<Service,int> serviceQuantities;
+  final Map<Product,int> productQuantities;
 
   const ConfirmOrderPage({
     super.key,
     required this.selectedServices,
+    required this.serviceQuantities,
+    required this.productQuantities,
     required this.selectedProducts,
     required this.selectedDate,
     required this.existingCustomers,
@@ -71,7 +76,32 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 items: widget.existingCustomers.map((Customer customer) {
                   return DropdownMenuItem<Customer>(
                     value: customer,
-                    child: Text(customer.name),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Divider(
+                          color: Colors.grey,
+                          height: 10,
+                          thickness: 1,
+                        ),
+                        Text(
+                          customer.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        Text(
+                          customer.email,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        Text(
+                          customer.phoneNumber,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
                   );
                 }).toList(),
                 onChanged: (Customer? value) {
@@ -90,40 +120,39 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 'Or Add New Customer:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _customerNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Customer Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a customer name';
-                  }
-                  return null;
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddNewCustomerPage(),
+                    ),
+                  );
                 },
+                child: const Text('Add New Customer'),
               ),
               const SizedBox(height: 16),
 
-              // Amount Field
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                },
-              ),
+              // // Amount Field
+              // TextFormField(
+              //   controller: _amountController,
+              //   decoration: const InputDecoration(
+              //     labelText: 'Amount',
+              //     border: OutlineInputBorder(),
+              //   ),
+              //   keyboardType: TextInputType.number,
+              //   validator: (value) {
+              //     if (value == null || value.isEmpty) {
+              //       return 'Please enter an amount';
+              //     }
+              //     if (double.tryParse(value) == null) {
+              //       return 'Please enter a valid number';
+              //     }
+              //     return null;
+              //   },
+              // ),
               const SizedBox(height: 16),
 
               // Display Selected Services
@@ -132,11 +161,45 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: widget.selectedServices.map((service) {
-                  return Text('- ${service.name}');
-                }).toList(),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widget.selectedServices.map((service) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              service.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Quantity: ${widget.serviceQuantities[service]}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Amount: ₹${service.price}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -149,8 +212,38 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: widget.selectedProducts.map((product) {
-                  return Text(
-                      '- ${product.name} (Quantity: ${product.quantity})');
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${product.name}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Quantity: ${widget.productQuantities[product]}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Amount: ₹${product.price}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 }).toList(),
               ),
               const SizedBox(height: 16),
@@ -163,7 +256,26 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
               const SizedBox(height: 8),
               Text(widget.selectedDate.toLocal().toString().split(' ')[0]),
               const SizedBox(height: 16),
-
+              // Total Amount
+              const Text(
+                'Total Amount:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '₹${widget.selectedServices.fold<double>(
+                  0.0,
+                  (previousValue, element) => previousValue + (double.parse(element.price) * widget.serviceQuantities[element]!),
+                ) +
+                    widget.selectedProducts.fold<double>(
+                  0.0,
+                  (previousValue, element) => previousValue + (double.parse(element.price) * widget.productQuantities[element]!),
+                )}',
+                style: const TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 16),
               // Confirm Order Button
               ElevatedButton(
                 onPressed: _submitForm,
@@ -204,12 +316,12 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
     if (_formKey.currentState!.validate()) {
       // Create a new order
       final newOrder = CreateOrder(
-        services: widget.selectedServices.map((e) => {'sname':e.name,'cost': e.price}).toList(),
+        services: widget.selectedServices.map((e) => {'sname':e.name,'cost': e.price,'quantity': widget.serviceQuantities[e]}).toList(),
         products: widget.selectedProducts
-            .map((e) => {'pname': e.name, 'quantity': e.quantity,'cost': e.price,'units': e.units})
+            .map((e) => {'pname': e.name, 'quantity': widget.productQuantities[e],'cost': e.price,'units': e.units})
             .toList(),
         customerId: _customerNameController.text,
-        // orderDate: widget.selectedDate,
+        orderDate: widget.selectedDate,
       );
       try {
         // Send the order to the server

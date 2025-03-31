@@ -89,11 +89,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       MaterialPageRoute(
                         builder: (context) => CustomerDetailsPage(
                           customer: Customer(
+                            custId: widget.order.customerId,
                             name: widget.order.customerName,
                             address: widget.order.customerAddress,
                             email: widget.order.customerEmail,
                             phoneNumber: widget.order.customerMobile,
-                            createdAt: DateTime.now().toString(),
+                            createdAt: widget.order.customerCreatedAt,
                           ),
                         ),
                       ),
@@ -132,7 +133,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             const SizedBox(height: 8),
             for (var product in widget.order.products)
               Text(
-                '- ${product['pname']} (Qty: ${product['quantity']} : \₹${product['cost']})',
+                '- ${product['pname']} (Qty: ${product['quantity']} : ₹${product['cost']})',
                 style: const TextStyle(color: Color(0xFF2f4757)),
               ),
 
@@ -140,7 +141,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
             // Total Amount
             _buildDetailRow(
-                'Total Amount:', '\$${widget.order.totalAmount}'),
+                'Total Amount:', '₹${widget.order.totalAmount}'),
             const SizedBox(height: 30),
 
             // Generate Invoice Button

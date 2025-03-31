@@ -1,8 +1,6 @@
 class Endpoints {
   static const String BASEURL = 'http://192.168.43.185:3000';
-
   static const String users = '/users';
-
   static const String login = '/bs/auth/login';
   static const String register = '/users/register';
   static const String logout = '/bs/auth/logout';
@@ -45,4 +43,11 @@ class Endpoints {
   static const String getServices='/bs/service';
   static const String editService='/bs/services';
   static const String deleteService='/bs/service';
+
+  //Booking Management
+  static const String getBookings='/bs/bookings/business';
+  static const String editBooking='/bs/booking';
+
+  //CRM
+  static const String getPastServices='/bs/past_services';
 }

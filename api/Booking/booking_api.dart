@@ -1,0 +1,46 @@
+import 'package:dio/dio.dart';
+import 'package:sklyit_business/models/booking_model/bookings.dart';
+import '../endpoints.dart';
+
+class BookingService {
+  final Dio _dio;
+
+  BookingService(Dio dio): _dio = dio;
+
+  Future<List<Booking>> getBookings() async{
+    try{
+      final response = await _dio.get(
+          Endpoints.getBookings
+      );
+      if(response.statusCode == 200){
+        List<dynamic> jsonData = response.data;
+        print(response.data);
+        return jsonData.map((data) => Booking.fromJson(data)).toList();
+      }
+      else{
+        throw Exception("Failed to load Bookings");
+      }
+    }
+    catch(error){
+      throw Exception("Failed to load Bookings:$error");
+    }
+  }
+
+  Future<void> updateBooking(Booking booking) async{
+    try{
+      final response = await _dio.put(
+          '${Endpoints.editBooking}/${booking.BookingId}',
+          data: {'Status':booking.status}
+      );
+      if(response.statusCode == 200){
+        print('Booking updated successfully!');
+      }
+      else{
+        throw Exception("Failed to update Booking");
+      }
+    }
+    catch(error){
+      throw Exception("Failed to update Booking:$error");
+    }
+  }
+}
