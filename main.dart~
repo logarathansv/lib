@@ -11,6 +11,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sklyit_business/screens/auth/LoginPage.dart';
+import 'package:sklyit_business/screens/business_view/customer_perspective.dart';
 import 'package:sklyit_business/screens/chat/chat_dashboard.dart';
 import 'package:sklyit_business/utils/socket/socket_service.dart';
 import 'api/check_refresh.dart';
@@ -78,7 +79,7 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
     super.initState();
     Future.delayed(Duration(seconds: 5));
     WidgetsBinding.instance.addObserver(this);
-    initialization();
+    WidgetsBinding.instance.addPostFrameCallback((_) => initialization(),);
     _checkInternetOnStart();
     _listenForInternetChanges();
   }
@@ -162,7 +163,7 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
     );
   }
 
-  void initialization() async {
+  Future<void> initialization() async {
     await verifyLogin();
     (logged) ? {uid = (await storage.read(key: 'userId'))!, SocketService().initialize(uid)} : null;
   }
@@ -197,16 +198,7 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
           ),
         ),
       ),
-      home: (isValid && logged) ? PersonalCareBusinessPage() : LoginPage(), // Show the PreloaderScreen first
-      routes: {
-        '/home': (context) => const PersonalCareBusinessPage(),
-        '/login': (context) => LoginPage(),
-      },
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const PersonalCareBusinessPage(),
-        );
-      },
+      home: (isValid && logged) ? PersonalCareBusinessPage() : LoginPage()
     );
   }
 }
@@ -233,7 +225,7 @@ class _PersonalCareBusinessPageState
       ShowToolsPage(),
       NotificationsPage(),
       Center(child: Text('Under Construction')),
-      // BusinessPerspective(),
+      CustomerPerspective(),
       ChatDashboard(uid: uid),
       SettingsPage(),
     ];

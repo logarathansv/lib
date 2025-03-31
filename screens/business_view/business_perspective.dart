@@ -6,9 +6,9 @@
 // import '../../providers/business_main.dart';
 // import '../../widgets/product_section.dart';
 // import 'customer_perspective.dart';
-// import '/services/services_section.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../../providers/business_provider.dart';
+// import '../../providers/service_provider.dart';
+// import '../../providers/product_provider.dart';
 //
 // class BusinessPerspective extends ConsumerStatefulWidget {
 //   const BusinessPerspective({super.key});
@@ -46,8 +46,8 @@
 //   void initState() {
 //     super.initState();
 //     serviceApi = ref.read(serviceServiceProvider);
-//     productApi = ref.read(productServiceProvider);
-//     postApi = ref.read(postServiceProvider);
+//     productApi = ref.read(productApiProvider);
+//     // postApi = ref.read(postServiceProvider);
 //     _fetchData();
 //   }
 //
@@ -69,159 +69,6 @@
 //       ScaffoldMessenger.of(context).showSnackBar(
 //         SnackBar(content: Text('Failed to fetch data: $e')),
 //       );
-//     }
-//   }
-//
-//   // Add a new service
-//   Future<void> _addService() async {
-//     final imageFile = await _pickImage();
-//
-//     if (imageFile == null) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Please select an image')),
-//       );
-//       return;
-//     }
-//
-//     setState(() => isProcessing = true);
-//     try {
-//       final newService = await serviceApi.createService(
-//         _serviceNameController.text,
-//         _serviceDescController.text,
-//         _serviceCostController.text,
-//         imageFile,
-//       );
-//       setState(() {
-//         allServices.add(newService);
-//         _serviceNameController.clear();
-//         _serviceDescController.clear();
-//         _serviceCostController.clear();
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to add service: $e')),
-//       );
-//     } finally {
-//       setState(() => isProcessing = false);
-//     }
-//   }
-//
-//   // Edit an existing service
-//   Future<void> _editService(int serviceId) async {
-//     setState(() => isProcessing = true);
-//     try {
-//       final updatedService = await serviceApi.editService(
-//         serviceId,
-//         _serviceNameController.text,
-//       );
-//       setState(() {
-//         final index = allServices.indexWhere((s) => s['Sid'] == serviceId);
-//         if (index != -1) {
-//           allServices[index] = updatedService;
-//         }
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to edit service: $e')),
-//       );
-//     } finally {
-//       setState(() => isProcessing = false);
-//     }
-//   }
-//
-//   // Delete a service
-//   Future<void> _deleteService(int serviceId) async {
-//     setState(() => isProcessing = true);
-//     try {
-//       await serviceApi.deleteService(serviceId);
-//       setState(() {
-//         allServices.removeWhere((s) => s['Sid'] == serviceId);
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to delete service: $e')),
-//       );
-//     } finally {
-//       setState(() => isProcessing = false);
-//     }
-//   }
-//
-//   // Add a new product
-//   Future<void> _addProduct() async {
-//     final imageFile = await _pickImage();
-//
-//     if (imageFile == null) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Please select an image')),
-//       );
-//       return;
-//     }
-//
-//     setState(() => isProcessing = true);
-//     try {
-//       final newProduct = await productApi.createProduct(
-//         _productNameController.text,
-//         _productDescController.text,
-//         _productPriceController.text,
-//         _productQtyController.text,
-//         imageFile,
-//       );
-//       setState(() {
-//         allProducts.add(newProduct);
-//         _productNameController.clear();
-//         _productDescController.clear();
-//         _productPriceController.clear();
-//         _productQtyController.clear();
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to add product: $e')),
-//       );
-//     } finally {
-//       setState(() => isProcessing = false);
-//     }
-//   }
-//
-//   // Edit an existing product
-//   Future<void> _editProduct(int productId) async {
-//     setState(() => isProcessing = true);
-//     try {
-//       final updatedProduct = await productApi.updateProduct(
-//         productId,
-//         _productNameController.text,
-//         _productDescController.text,
-//         _productPriceController.text,
-//         _productQtyController.text,
-//       );
-//       setState(() {
-//         final index = allProducts.indexWhere((p) => p['Pid'] == productId);
-//         if (index != -1) {
-//           allProducts[index] = updatedProduct;
-//         }
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to edit product: $e')),
-//       );
-//     } finally {
-//       setState(() => isProcessing = false);
-//     }
-//   }
-//
-//   // Delete a product
-//   Future<void> _deleteProduct(int productId) async {
-//     setState(() => isProcessing = true);
-//     try {
-//       await productApi.deleteProduct(productId);
-//       setState(() {
-//         allProducts.removeWhere((p) => p['Pid'] == productId);
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to delete product: $e')),
-//       );
-//     } finally {
-//       setState(() => isProcessing = false);
 //     }
 //   }
 //
@@ -358,20 +205,20 @@
 //       _formKey.currentState!.save();
 //       final businessData = ref.read(businessProvider);
 //
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(
-//           builder: (context) => CustomerPerspective(
-//             shopName: businessData.shopName,
-//             shopDescription: businessData.shopDescription,
-//             shopAddress: businessData.shopAddress,
-//             bannerImagePath: bannerImageUrl,
-//             services: showServices ? allServices : [],
-//             posts: posts,
-//             products: showProducts ? allProducts : [],
-//           ),
-//         ),
-//       );
+//       // Navigator.push(
+//       //   context,
+//       //   MaterialPageRoute(
+//       //     builder: (context) => CustomerPerspective(
+//       //       shopName: businessData.shopName,
+//       //       shopDescription: businessData.shopDescription,
+//       //       shopAddress: businessData.shopAddress,
+//       //       bannerImagePath: bannerImageUrl,
+//       //       services: showServices ? allServices : [],
+//       //       posts: posts,
+//       //       products: showProducts ? allProducts : [],
+//       //     ),
+//       //   ),
+//       // );
 //     }
 //   }
 //

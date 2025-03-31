@@ -36,7 +36,6 @@ class _ServicesSectionState extends State<ServicesSection> {
     );
   }
 
-
   // Handle adding a new service (you can use the ImagePicker to allow business users to upload images)
   void _addService() async {
     final picker = ImagePicker();

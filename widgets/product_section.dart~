@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
@@ -6,7 +7,8 @@ class ProductsSection extends StatefulWidget {
   final List<Map<String, dynamic>> products;
   final bool isBusiness;
 
-  ProductsSection({
+  const ProductsSection({
+    super.key,
     required this.products,
     required this.isBusiness,
   });
@@ -18,12 +20,14 @@ class ProductsSection extends StatefulWidget {
 class _ProductsSectionState extends State<ProductsSection> {
   @override
   Widget build(BuildContext context) {
-    final otherProducts = widget.products.where((product) => product['isPopular'] != true).toList();
+    final otherProducts = widget.products
+        .where((product) => product['isPopular'] != true)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         _buildHorizontalSection('Our Products', otherProducts),
       ],
     );
@@ -52,7 +56,8 @@ class _ProductsSectionState extends State<ProductsSection> {
   }
 
   // Horizontal Section Builder
-  Widget _buildHorizontalSection(String title, List<Map<String, dynamic>> productList) {
+  Widget _buildHorizontalSection(
+      String title, List<Map<String, dynamic>> productList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -61,16 +66,16 @@ class _ProductsSectionState extends State<ProductsSection> {
           children: [
             Text(
               title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             if (title == 'Our Products' && widget.isBusiness)
               IconButton(
-                icon: Icon(Icons.add_circle),
+                icon: const Icon(Icons.add_circle),
                 onPressed: _addProduct,
               ),
           ],
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         SizedBox(
           height: 300,
           child: ListView.builder(
@@ -90,7 +95,7 @@ class _ProductsSectionState extends State<ProductsSection> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     return Container(
       width: 300,
-      margin: EdgeInsets.only(right: 16),
+      margin: const EdgeInsets.only(right: 16),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 3,
@@ -102,14 +107,16 @@ class _ProductsSectionState extends State<ProductsSection> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 product['name'],
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(product['description'], style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+              child: Text(product['description'],
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700])),
             ),
-            Spacer(),
+            const Spacer(),
             _buildPriceAndQuantity(product),
           ],
         ),
@@ -120,10 +127,12 @@ class _ProductsSectionState extends State<ProductsSection> {
   // Product Image Widget
   Widget _buildProductImage(String imageUrl) {
     return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
       child: imageUrl.startsWith('http')
-          ? Image.network(imageUrl, height: 150, width: double.infinity, fit: BoxFit.cover)
-          : Image.file(File(imageUrl), height: 150, width: double.infinity, fit: BoxFit.cover),
+          ? Image.network(imageUrl,
+              height: 150, width: double.infinity, fit: BoxFit.cover)
+          : Image.file(File(imageUrl),
+              height: 150, width: double.infinity, fit: BoxFit.cover),
     );
   }
 
@@ -133,9 +142,12 @@ class _ProductsSectionState extends State<ProductsSection> {
       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
       child: Row(
         children: [
-          Text('₹${product['price']}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Spacer(),
-          Text('Qty: ${product['quantity']}', style: TextStyle(fontSize: 14)),
+          Text('₹${product['price']}',
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Text('Qty: ${product['quantity']}',
+              style: const TextStyle(fontSize: 14)),
         ],
       ),
     );
@@ -146,7 +158,8 @@ class ProductDetailsScreen extends StatefulWidget {
   final String imagePath;
   final Function(Map<String, dynamic>) onSave;
 
-  ProductDetailsScreen({required this.imagePath, required this.onSave});
+  const ProductDetailsScreen(
+      {super.key, required this.imagePath, required this.onSave});
 
   @override
   _ProductDetailsScreenState createState() => _ProductDetailsScreenState();
@@ -163,27 +176,49 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Product Details'),
+        backgroundColor: const Color(0xfff4c345),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => {Navigator.of(context).pop()},
+          icon: const HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft03,
+            color: Colors.black,
+            size: 24.0,
+          ),
+        ),
+        title: const Text(
+          'Product Details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2f4757),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Image.file(File(widget.imagePath), height: 200, fit: BoxFit.cover),
-              SizedBox(height: 20),
+              Image.file(File(widget.imagePath),
+                  height: 200, fit: BoxFit.cover),
+              const SizedBox(height: 20),
               Form(
                 key: _formKey,
                 child: Column(
                   children: [
                     _buildTextField('Product Name', (value) => name = value),
-                    SizedBox(height: 10),
-                    _buildTextField('Description', (value) => description = value, maxLines: 3),
-                    SizedBox(height: 10),
-                    _buildTextField('Price', (value) => price = value, inputType: TextInputType.number),
-                    SizedBox(height: 10),
-                    _buildTextField('Quantity', (value) => quantity = value, inputType: TextInputType.number),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    _buildTextField(
+                        'Description', (value) => description = value,
+                        maxLines: 3),
+                    const SizedBox(height: 10),
+                    _buildTextField('Price', (value) => price = value,
+                        inputType: TextInputType.number),
+                    const SizedBox(height: 10),
+                    _buildTextField('Quantity', (value) => quantity = value,
+                        inputType: TextInputType.number),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
@@ -199,7 +234,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           Navigator.pop(context);
                         }
                       },
-                      child: Text('Save Product'),
+                      child: const Text('Save Product'),
                     ),
                   ],
                 ),
@@ -211,12 +246,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, Function(String) onSave, {int maxLines = 1, TextInputType inputType = TextInputType.text}) {
+  Widget _buildTextField(String label, Function(String) onSave,
+      {int maxLines = 1, TextInputType inputType = TextInputType.text}) {
     return TextFormField(
-      decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+      decoration:
+          InputDecoration(labelText: label, border: const OutlineInputBorder()),
       maxLines: maxLines,
       keyboardType: inputType,
-      validator: (value) => value == null || value.isEmpty ? '$label is required' : null,
+      validator: (value) =>
+          value == null || value.isEmpty ? '$label is required' : null,
       onSaved: (value) => onSave(value!),
     );
   }

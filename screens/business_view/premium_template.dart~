@@ -94,10 +94,10 @@ class _PremiumTemplateState extends State<PremiumTemplate> {
               // Reset to normal for Popular Items section
               _buildPopularItemsSection(),
               SectionTitle(title: 'Services'),
-              // services_section.ServicesSection(
-              //   services: _getSampleServices(),
-              //   isBusiness: false,
-              // ),
+              services_section.ServicesSection(
+                services: _getSampleServices(),
+                isBusiness: false,
+              ),
               SectionTitle(title: 'Products'),
               products_section.ProductsSection(
                 products: _getSampleProducts(),
