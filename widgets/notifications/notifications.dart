@@ -1,4 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; 
+
+void main() {
+  runApp(
+    MaterialApp(
+      home: NotificationsPage(),
+    ));
+}
+
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -35,6 +44,10 @@ class _NotificationsPageState extends State<NotificationsPage>
     super.dispose();
   }
 
+  void _showPopupPage(BuildContext context) {
+  showFilterPopup(context);
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,6 +64,10 @@ class _NotificationsPageState extends State<NotificationsPage>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                actions: [
+                  IconButton(onPressed: ()=> _showPopupPage(context),
+                   icon: const Icon(Icons.tune))
+                ],
               ),
               const Divider(
                 thickness: 3,
@@ -167,3 +184,226 @@ class _NotificationsPageState extends State<NotificationsPage>
     );
   }
 }
+
+
+// 1. First, create a Product model class (can be in same file or separate)
+
+class Product {
+  final String name;
+  bool checked;
+
+  Product({
+    required this.name,
+    this.checked = false,
+  });
+}
+
+class PopupPage extends StatefulWidget {
+  PopupPage({super.key});
+
+  @override
+  State<PopupPage> createState() => _PopupPageState();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+}
+
+class _PopupPageState extends State<PopupPage> {
+  final List<Product> _products = [
+    Product(name: 'Product 1'),
+    Product(name: 'Product 2'),
+    Product(name: 'Product 3'),
+  ];
+  
+  int _secondsRemaining = 60;
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+  const oneSec = Duration(seconds: 1);
+  _timer = Timer.periodic(oneSec, (Timer timer) {
+    if (_secondsRemaining == 0) {
+      timer.cancel();
+      Navigator.of(context).pop(); // Close the popup when timer reaches 0
+    } else {
+      setState(() {
+        _secondsRemaining--;
+      });
+    }
+  });
+}
+
+@override
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.transparent,
+    appBar: null,
+    body: Column(
+      children: [
+        // Status message area at the top
+        /*
+        Container(
+          color: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          width: double.infinity,
+          alignment: Alignment.center,
+          child: const SizedBox.shrink(), // Placeholder for messages
+        ),
+        */
+        // Half-circle timer below message area
+        Stack(
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 100,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(60),
+                  topRight: Radius.circular(60),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  )
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  '$_secondsRemaining',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        Container(
+          color: Colors.orange,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          width: double.infinity,
+          child: const Text(
+            'Order',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        
+        // Product list
+        Expanded(
+          child: Container(
+            color: Colors.white,
+            child: ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                return CheckboxListTile(
+                  title: Text(_products[index].name),
+                  value: _products[index].checked,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _products[index].checked = value ?? false;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.white,
+                  checkColor: Colors.black,
+                );
+              },
+            ),
+          ),
+        ),
+        
+        // Modified Accept Order button
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                bool atLeastOneSelected = _products.any((product) => product.checked);
+                if (atLeastOneSelected) {
+                  // Show message at top
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Order Accepted!'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  
+                  // Close popup after delay
+                  Future.delayed(const Duration(seconds: 1), () {
+                    if (mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select at least one product'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              child: const Text(
+                'Accept Order',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+}
+
+// Function to show the modal popup
+void showFilterPopup(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (BuildContext context) {
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: PopupPage(),
+      );
+    },
+  );
+}
+

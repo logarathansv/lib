@@ -11,6 +11,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sklyit_business/screens/auth/LoginPage.dart';
+import 'package:sklyit_business/screens/business_view/customer_perspective.dart';
 import 'package:sklyit_business/screens/chat/chat_dashboard.dart';
 import 'package:sklyit_business/utils/socket/socket_service.dart';
 import 'api/check_refresh.dart';
@@ -223,8 +224,7 @@ class _PersonalCareBusinessPageState
     _pages = [
       ShowToolsPage(),
       NotificationsPage(),
-      Center(child: Text('Under Construction')),
-      // BusinessPerspective(),
+      CustomerPerspective(),
       ChatDashboard(uid: uid),
       SettingsPage(),
     ];

@@ -77,7 +77,7 @@ class ShopInfoCard extends StatelessWidget {
               Icon(Icons.check_circle, color: Colors.green, size: iconSize),
               const SizedBox(width: 4),
               Text(
-                'SkylIt Verified',
+                'SklyIt Verified',
                 style:
                     TextStyle(fontWeight: FontWeight.bold, fontSize: textSize),
               ),

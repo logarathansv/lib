@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io'; // For handling file images
-import 'package:image_picker/image_picker.dart'; // For picking images from gallery
+import 'package:image_picker/image_picker.dart';
+import 'package:sklyit_business/models/service_model/service_model.dart'; // For picking images from gallery
 
 class ServicesSection extends StatefulWidget {
-  final List<Map<String, dynamic>> services;
+  final List<Service> services;
   final bool isBusiness;
 
   const ServicesSection(
@@ -20,10 +21,8 @@ class _ServicesSectionState extends State<ServicesSection> {
   @override
   Widget build(BuildContext context) {
     final popularServices = widget.services
-        .where((service) => service['isPopular'] == true)
         .toList();
     final otherServices = widget.services
-        .where((service) => service['isPopular'] != true)
         .toList();
 
     return Column(
@@ -37,104 +36,104 @@ class _ServicesSectionState extends State<ServicesSection> {
   }
 
   // Handle adding a new service (you can use the ImagePicker to allow business users to upload images)
-  void _addService() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  // void _addService() async {
+  //   final picker = ImagePicker();
+  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  //
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       widget.services.add({
+  //         'imageUrl': pickedFile.path, // Add the image path from the gallery
+  //         'name': 'New Service', // Name of the service
+  //         'description': 'Describe this service', // Service description
+  //         'price': '0', // Price of the service
+  //         'isPopular': false, // Default to non-popular
+  //       });
+  //     });
+  //   }
+  // }
 
-    if (pickedFile != null) {
-      setState(() {
-        widget.services.add({
-          'imageUrl': pickedFile.path, // Add the image path from the gallery
-          'name': 'New Service', // Name of the service
-          'description': 'Describe this service', // Service description
-          'price': '0', // Price of the service
-          'isPopular': false, // Default to non-popular
-        });
-      });
-    }
-  }
-
-  void _editService(Map<String, dynamic> service) {
-    // Controllers for editing fields
-    TextEditingController nameController =
-        TextEditingController(text: service['name']);
-    TextEditingController descriptionController =
-        TextEditingController(text: service['description']);
-    TextEditingController priceController =
-        TextEditingController(text: service['price']);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent accidental closing
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            title: const Text('Edit Service'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Name Field
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Service Name',
-                      border: OutlineInputBorder(),
-                    ),
-                    autofocus: true, // Automatically focus this input
-                  ),
-                  const SizedBox(height: 10),
-                  // Description Field
-                  TextField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 10),
-                  // Price Field
-                  TextField(
-                    controller: priceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Price',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number, // Numeric input
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close dialog without saving
-                },
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    // Update service details
-                    service['name'] = nameController.text;
-                    service['description'] = descriptionController.text;
-                    service['price'] = priceController.text;
-                  });
-                  Navigator.of(context).pop(); // Close dialog after saving
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+  // void _editService(Map<String, dynamic> service) {
+  //   // Controllers for editing fields
+  //   TextEditingController nameController =
+  //       TextEditingController(text: service['name']);
+  //   TextEditingController descriptionController =
+  //       TextEditingController(text: service['description']);
+  //   TextEditingController priceController =
+  //       TextEditingController(text: service['price']);
+  //
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false, // Prevent accidental closing
+  //     builder: (context) => StatefulBuilder(
+  //       builder: (context, setDialogState) {
+  //         return AlertDialog(
+  //           title: const Text('Edit Service'),
+  //           content: SingleChildScrollView(
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 // Name Field
+  //                 TextField(
+  //                   controller: nameController,
+  //                   decoration: const InputDecoration(
+  //                     labelText: 'Service Name',
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                   autofocus: true, // Automatically focus this input
+  //                 ),
+  //                 const SizedBox(height: 10),
+  //                 // Description Field
+  //                 TextField(
+  //                   controller: descriptionController,
+  //                   decoration: const InputDecoration(
+  //                     labelText: 'Description',
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                   maxLines: 3,
+  //                 ),
+  //                 const SizedBox(height: 10),
+  //                 // Price Field
+  //                 TextField(
+  //                   controller: priceController,
+  //                   decoration: const InputDecoration(
+  //                     labelText: 'Price',
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                   keyboardType: TextInputType.number, // Numeric input
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.of(context).pop(); // Close dialog without saving
+  //               },
+  //               child: const Text('Cancel'),
+  //             ),
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 setState(() {
+  //                   // Update service details
+  //                   service['name'] = nameController.text;
+  //                   service['description'] = descriptionController.text;
+  //                   service['price'] = priceController.text;
+  //                 });
+  //                 Navigator.of(context).pop(); // Close dialog after saving
+  //               },
+  //               child: const Text('Save'),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 
   // Section Builder for Horizontal List
   Widget _buildHorizontalSection(
-      String title, List<Map<String, dynamic>> serviceList) {
+      String title, List<Service> serviceList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -148,7 +147,7 @@ class _ServicesSectionState extends State<ServicesSection> {
             ),
             if (title == 'Our Services' && widget.isBusiness)
               IconButton(
-                onPressed: _addService,
+                onPressed: (){},
                 icon: const Icon(Icons.add_circle),
               ),
           ],
@@ -171,35 +170,35 @@ class _ServicesSectionState extends State<ServicesSection> {
 
   // Three dot menu for each card
 
-  Widget _threeDotMenu(BuildContext context, Map<String, dynamic> service) {
-    return PopupMenuButton<String>(
-      onSelected: (value) {
-        if (value == 'Edit') {
-          // Edit the service
-          _editService(service);
-        } else if (value == 'Delete') {
-          setState(() {
-            widget.services.remove(service);
-          });
-        }
-      },
-      itemBuilder: (context) {
-        return [
-          const PopupMenuItem<String>(
-            value: 'Edit',
-            child: Text('Edit'),
-          ),
-          const PopupMenuItem<String>(
-            value: 'Delete',
-            child: Text('Delete'),
-          ),
-        ];
-      },
-    );
-  }
+  // Widget _threeDotMenu(BuildContext context, Service service) {
+  //   return PopupMenuButton<String>(
+  //     onSelected: (value) {
+  //       if (value == 'Edit') {
+  //         // Edit the service
+  //         _editService(service);
+  //       } else if (value == 'Delete') {
+  //         setState(() {
+  //           widget.services.remove(service);
+  //         });
+  //       }
+  //     },
+  //     itemBuilder: (context) {
+  //       return [
+  //         const PopupMenuItem<String>(
+  //           value: 'Edit',
+  //           child: Text('Edit'),
+  //         ),
+  //         const PopupMenuItem<String>(
+  //           value: 'Delete',
+  //           child: Text('Delete'),
+  //         ),
+  //       ];
+  //     },
+  //   );
+  // }
 
   // Service Card Builder
-  Widget _buildServiceCard(Map<String, dynamic> service) {
+  Widget _buildServiceCard(Service service) {
     return Container(
       width: 300,
       margin: const EdgeInsets.only(right: 16),
@@ -217,15 +216,15 @@ class _ServicesSectionState extends State<ServicesSection> {
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: service['imageUrl'].startsWith('http')
+                  child: service.imageUrl.toString().startsWith('http')
                       ? Image.network(
-                          service['imageUrl'],
+                          service.imageUrl.toString(),
                           height: 150,
                           width: double.infinity,
                           fit: BoxFit.cover,
                         )
                       : Image.file(
-                          File(service['imageUrl']),
+                          File(service.imageUrl.toString()),
                           height: 150,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -234,7 +233,7 @@ class _ServicesSectionState extends State<ServicesSection> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    service['name'],
+                    service.name,
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -242,7 +241,7 @@ class _ServicesSectionState extends State<ServicesSection> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    service['description'],
+                    service.description.toString() ?? '',
                     style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
                 ),
@@ -257,7 +256,7 @@ class _ServicesSectionState extends State<ServicesSection> {
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Text(
-                          service['price'],
+                          service.price.toString(),
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
@@ -282,13 +281,13 @@ class _ServicesSectionState extends State<ServicesSection> {
               ],
             ),
 
-            // Positioned Three-dot Menu at the Top-Right Corner
-            if (widget.isBusiness && !(service['isPopular'] ?? false))
-              Positioned(
-                top: 8,
-                right: 8,
-                child: _threeDotMenu(context, service),
-              ),
+            // // Positioned Three-dot Menu at the Top-Right Corner
+            // if (widget.isBusiness && !(service['isPopular'] ?? false))
+            //   Positioned(
+            //     top: 8,
+            //     right: 8,
+            //     child: _threeDotMenu(context, service),
+            //   ),
           ],
         ),
       ),

@@ -3,8 +3,10 @@ import 'package:hugeicons/hugeicons.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
+import '../models/product_model/product_model.dart';
+
 class ProductsSection extends StatefulWidget {
-  final List<Map<String, dynamic>> products;
+  final List<Product> products;
   final bool isBusiness;
 
   const ProductsSection({
@@ -21,7 +23,6 @@ class _ProductsSectionState extends State<ProductsSection> {
   @override
   Widget build(BuildContext context) {
     final otherProducts = widget.products
-        .where((product) => product['isPopular'] != true)
         .toList();
 
     return Column(
@@ -35,29 +36,29 @@ class _ProductsSectionState extends State<ProductsSection> {
 
   // Add Product Functionality
   void _addProduct() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProductDetailsScreen(
-            imagePath: pickedFile.path,
-            onSave: (newProduct) {
-              setState(() {
-                widget.products.add(newProduct);
-              });
-            },
-          ),
-        ),
-      );
-    }
+    // final picker = ImagePicker();
+    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    //
+    // if (pickedFile != null) {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => ProductDetailsScreen(
+    //         imagePath: pickedFile.path,
+    //         onSave: (newProduct) {
+    //           setState(() {
+    //             widget.products.add(newProduct);
+    //           });
+    //         },
+    //       ),
+    //     ),
+    //   );
+    // }
   }
 
   // Horizontal Section Builder
   Widget _buildHorizontalSection(
-      String title, List<Map<String, dynamic>> productList) {
+      String title, List<Product> productList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,7 +93,7 @@ class _ProductsSectionState extends State<ProductsSection> {
   }
 
   // Product Card Builder
-  Widget _buildProductCard(Map<String, dynamic> product) {
+  Widget _buildProductCard(Product product) {
     return Container(
       width: 300,
       margin: const EdgeInsets.only(right: 16),
@@ -102,18 +103,18 @@ class _ProductsSectionState extends State<ProductsSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProductImage(product['imageUrl']),
+            _buildProductImage(product.imageUrl!),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                product['name'],
+                product.name,
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(product['description'],
+              child: Text(product.description!,
                   style: TextStyle(fontSize: 14, color: Colors.grey[700])),
             ),
             const Spacer(),
@@ -137,16 +138,16 @@ class _ProductsSectionState extends State<ProductsSection> {
   }
 
   // Price and Quantity Display
-  Widget _buildPriceAndQuantity(Map<String, dynamic> product) {
+  Widget _buildPriceAndQuantity(Product product) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
       child: Row(
         children: [
-          Text('₹${product['price']}',
+          Text('₹${product.price}',
               style:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const Spacer(),
-          Text('Qty: ${product['quantity']}',
+          Text('Qty: ${product.quantity}',
               style: const TextStyle(fontSize: 14)),
         ],
       ),
