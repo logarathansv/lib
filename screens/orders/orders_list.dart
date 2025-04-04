@@ -53,7 +53,7 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
         });
       },
       error: (error,stackTrace){
-        print("Error Loading services: $error");
+        print("Error Loading services: $error , $stackTrace");
         return [];
       },
       loading:
@@ -352,7 +352,24 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
           .toList();
     });
   }
-
+  Future<void> deleteOrder(String orderId) async{
+    try{
+      ref.watch(orderServiceProvider).when(
+        data: (orderService) async {
+          await orderService.deleteOrder(orderId);
+        },
+        error: (error, stackTrace) {
+          print('Error sending order: $error');
+        },
+        loading: () {
+          print('Sending order...');
+        },
+      );
+      ref.invalidate(getOrdersProvider);
+    }catch(e){
+      print('Error sending order: $e');
+    }
+  }
   // Order Card
   Widget _buildOrderCard(Order order, BuildContext context) {
     return Card(
@@ -427,6 +444,41 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
                             child: child,
                           );
                         },
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const HugeIcon(
+                    icon: Icons.delete_forever,
+                    color: Colors.red,
+                    size: 24.0,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delete Order'),
+                        content: Text('Are you sure you want to delete ${order.customerName}\'s order?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Delete the order
+                              deleteOrder(order.orderId);
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },

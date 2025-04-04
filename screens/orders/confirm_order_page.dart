@@ -76,31 +76,41 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 items: widget.existingCustomers.map((Customer customer) {
                   return DropdownMenuItem<Customer>(
                     value: customer,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Divider(
-                          color: Colors.grey,
-                          height: 10,
-                          thickness: 1,
+                    child: SizedBox(
+                      width: 250,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                customer.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                customer.email,
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                customer.phoneNumber,
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          customer.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        Text(
-                          customer.email,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        Text(
-                          customer.phoneNumber,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 }).toList(),
@@ -112,9 +122,9 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                     }
                   });
                 },
+                isExpanded: true,
               ),
               const SizedBox(height: 16),
-
               // Or Add New Customer
               const Text(
                 'Or Add New Customer:',
@@ -308,6 +318,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
           print('Sending order...');
         },
       );
+      ref.invalidate(getOrdersProvider);
     } catch (e) {
       print('Error sending order: $e');
     }
@@ -329,8 +340,10 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
       } catch (e) {
         print('Error sending order: $e');
       }
-      // Return the new order to the previous page
-      Navigator.push(context, MaterialPageRoute(builder: (context) => AddOrdersPage()));
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => AddOrdersPage()),
+        (route) => false,
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),

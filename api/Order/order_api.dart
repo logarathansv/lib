@@ -65,9 +65,8 @@ class OrderService{
 
   Future<void> deleteOrder(String orderId) async{
     try{
-      final response = await _dio.put(
-          Endpoints.deleteOrder,
-          data:{"orderId":orderId}
+      final response = await _dio.delete(
+          '${Endpoints.deleteOrder}/$orderId',
       );
       if(response.statusCode == 200){
         print('Order deleted successfully!');

@@ -8,6 +8,7 @@ class OrderService{
 
   Future<List<Order>> getOrders() async{
     try{
+      print('getting orders');
       final response = await _dio.get(
           Endpoints.getOrders
       );
@@ -65,8 +66,7 @@ class OrderService{
   Future<void> deleteOrder(String orderId) async{
     try{
       final response = await _dio.put(
-          Endpoints.deleteOrder,
-          data:{"orderId":orderId}
+          '${Endpoints.deleteOrder}/$orderId',
       );
       if(response.statusCode == 200){
         print('Order deleted successfully!');

@@ -15,13 +15,14 @@ class ConfirmOrderPage extends ConsumerStatefulWidget {
   final List<Product> selectedProducts;
   final DateTime selectedDate;
   final List<Customer> existingCustomers;
-  final int serviceQuantity;
-  final int productQuantity;
+  final Map<Service,int> serviceQuantities;
+  final Map<Product,int> productQuantities;
+
   const ConfirmOrderPage({
     super.key,
     required this.selectedServices,
-    required this.serviceQuantity,
-    required this.productQuantity,
+    required this.serviceQuantities,
+    required this.productQuantities,
     required this.selectedProducts,
     required this.selectedDate,
     required this.existingCustomers,
@@ -75,26 +76,41 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 items: widget.existingCustomers.map((Customer customer) {
                   return DropdownMenuItem<Customer>(
                     value: customer,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          customer.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                    child: SizedBox(
+                      width: 250,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                customer.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                customer.email,
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                customer.phoneNumber,
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          customer.email,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        Text(
-                          customer.phoneNumber,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 }).toList(),
@@ -106,9 +122,9 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                     }
                   });
                 },
+                isExpanded: true,
               ),
               const SizedBox(height: 16),
-
               // Or Add New Customer
               const Text(
                 'Or Add New Customer:',
@@ -129,24 +145,24 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
               ),
               const SizedBox(height: 16),
 
-              // Amount Field
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                },
-              ),
+              // // Amount Field
+              // TextFormField(
+              //   controller: _amountController,
+              //   decoration: const InputDecoration(
+              //     labelText: 'Amount',
+              //     border: OutlineInputBorder(),
+              //   ),
+              //   keyboardType: TextInputType.number,
+              //   validator: (value) {
+              //     if (value == null || value.isEmpty) {
+              //       return 'Please enter an amount';
+              //     }
+              //     if (double.tryParse(value) == null) {
+              //       return 'Please enter a valid number';
+              //     }
+              //     return null;
+              //   },
+              // ),
               const SizedBox(height: 16),
 
               // Display Selected Services
@@ -155,42 +171,45 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: widget.selectedServices.map((service) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            service.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widget.selectedServices.map((service) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              service.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Quantity: ${widget.serviceQuantity}',
-                            style: const TextStyle(
-                              fontSize: 14,
+                            const SizedBox(height: 4),
+                            Text(
+                              'Quantity: ${widget.serviceQuantities[service]}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Amount: ₹${service.price}',
-                            style: const TextStyle(
-                              fontSize: 14,
+                            const SizedBox(height: 4),
+                            Text(
+                              'Amount: ₹${service.price}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -211,7 +230,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '- ${product.name}',
+                            '${product.name}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -219,7 +238,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Quantity: ${widget.productQuantity}',
+                            'Quantity: ${widget.productQuantities[product]}',
                             style: const TextStyle(
                               fontSize: 14,
                             ),
@@ -256,11 +275,11 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
               Text(
                 '₹${widget.selectedServices.fold<double>(
                   0.0,
-                  (previousValue, element) => previousValue + (double.parse(element.price) * widget.serviceQuantity),
+                  (previousValue, element) => previousValue + (double.parse(element.price) * widget.serviceQuantities[element]!),
                 ) +
                     widget.selectedProducts.fold<double>(
                   0.0,
-                  (previousValue, element) => previousValue + (double.parse(element.price) * widget.productQuantity),
+                  (previousValue, element) => previousValue + (double.parse(element.price) * widget.productQuantities[element]!),
                 )}',
                 style: const TextStyle(
                   fontSize: 16,
@@ -307,9 +326,9 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
     if (_formKey.currentState!.validate()) {
       // Create a new order
       final newOrder = CreateOrder(
-        services: widget.selectedServices.map((e) => {'sname':e.name,'cost': e.price,'quantity': widget.serviceQuantity}).toList(),
+        services: widget.selectedServices.map((e) => {'sname':e.name,'cost': e.price,'quantity': widget.serviceQuantities[e]}).toList(),
         products: widget.selectedProducts
-            .map((e) => {'pname': e.name, 'quantity': widget.productQuantity,'cost': e.price,'units': e.units})
+            .map((e) => {'pname': e.name, 'quantity': widget.productQuantities[e],'cost': e.price,'units': e.units})
             .toList(),
         customerId: _customerNameController.text,
         orderDate: widget.selectedDate,
@@ -317,11 +336,14 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
       try {
         // Send the order to the server
         _sendOrder(newOrder);
+        ref.invalidate(getOrdersProvider);
       } catch (e) {
         print('Error sending order: $e');
       }
-      // Return the new order to the previous page
-      Navigator.push(context, MaterialPageRoute(builder: (context) => AddOrdersPage()));
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => AddOrdersPage()),
+        (route) => false,
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
