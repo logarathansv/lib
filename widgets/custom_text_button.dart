@@ -14,6 +14,7 @@ class CustomButton extends StatelessWidget {
     this.fontSize,
     this.icon,
     this.radius,
+    this.isOutlined = false,
   });
 
   final String title;
@@ -25,6 +26,7 @@ class CustomButton extends StatelessWidget {
   final double? fontSize;
   final IconData? icon;
   final double? radius;
+  final bool isOutlined;
 
   @override
   Widget build(BuildContext context) {
@@ -35,30 +37,57 @@ class CustomButton extends StatelessWidget {
         height: height ?? 50.0,
         width: width ?? double.infinity,
         decoration: BoxDecoration(
-          color: color ?? kPrimaryColor,
+          gradient: isOutlined ? null : LinearGradient(
+            colors: [
+              color ?? kPrimaryColor,
+              color?.withOpacity(0.8) ?? kPrimaryColor.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(radius ?? 15.0),
+          border: isOutlined ? Border.all(
+            color: color ?? kPrimaryColor,
+            width: 2.0,
+          ) : null,
+          boxShadow: [
+            BoxShadow(
+              color: (color ?? kPrimaryColor).withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            icon != null
-                ? Padding(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(radius ?? 15.0),
+            onTap: onTap,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Padding(
                     padding: const EdgeInsets.only(right: 10.0),
                     child: Icon(
                       icon,
-                      color: Colors.white,
+                      color: isOutlined ? (color ?? kPrimaryColor) : Colors.white,
+                      size: 20,
                     ),
-                  )
-                : const SizedBox.shrink(),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: fontSize ?? 16.0,
-                fontWeight: FontWeight.w600,
-              ),
+                  ),
+                ],
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isOutlined ? (color ?? kPrimaryColor) : Colors.white,
+                    fontSize: fontSize ?? 16.0,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

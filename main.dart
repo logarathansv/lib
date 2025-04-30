@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sklyit_business/screens/auth/LoginPage.dart';
 import 'package:sklyit_business/screens/business_view/customer_perspective.dart';
 import 'package:sklyit_business/screens/chat/chat_dashboard.dart';
+import 'package:sklyit_business/screens/flash/flash_main.dart';
 import 'package:sklyit_business/utils/socket/socket_service.dart';
 import 'api/check_refresh.dart';
 import 'screens/business_view/business_perspective.dart';
@@ -223,8 +224,8 @@ class _PersonalCareBusinessPageState
     super.initState();
     _pages = [
       ShowToolsPage(),
-      NotificationsPage(),
       CustomerPerspective(),
+      FlashScreen(),
       ChatDashboard(uid: uid),
       SettingsPage(),
     ];
@@ -254,14 +255,15 @@ class _PersonalCareBusinessPageState
             ),
           ),
           CurvedNavigationBarItem(
-            child: Icon(
-              Icons.notifications_none_outlined,
+            child: HugeIcon(
+              icon: HugeIcons.strokeRoundedBriefcase04,
               color: Colors.black,
+              size: 24.0,
             ),
           ),
           CurvedNavigationBarItem(
             child: HugeIcon(
-              icon: HugeIcons.strokeRoundedBriefcase04,
+              icon: HugeIcons.strokeRoundedFlash,
               color: Colors.black,
               size: 24.0,
             ),

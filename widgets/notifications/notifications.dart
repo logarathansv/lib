@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async'; 
-
-void main() {
-  runApp(
-    MaterialApp(
-      home: NotificationsPage(),
-    ));
-}
-
+import 'dart:async';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});

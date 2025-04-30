@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 
-const kPrimaryColor = Color(0xff1c863b);
+const kPrimaryColor = Color(0xFF2F4757);
 
-const kSecondaryColor = Color(0xff212121);
+const kSecondaryColor = Color(0xFF34495E);
 
-const kHighLightColor = Color(0xffeef4ef);
+const kHighLightColor = Color(0xFFE8F5E9);
 
-const kSecondaryAccent = Color(0xff757784);
+const kAccentColor = Color(0xFFF4C345);
+
+const kTextColor = Color(0xFF2C3E50);
+
+const kSecondaryAccent = Color(0xFF95A5A6);
 
 const kTextFieldStyle = TextStyle(
   fontSize: 14.5,
   fontWeight: FontWeight.w500,
   height: 1.4,
+  color: kTextColor,
 );
 
 const kLabelStyle = TextStyle(
-  color: Color(0xff757784),
+  color: kSecondaryAccent,
   fontSize: 13.0,
   fontWeight: FontWeight.bold,
 );
@@ -23,43 +28,79 @@ const kLabelStyle = TextStyle(
 const kSectionHeaderStyle = TextStyle(
   fontSize: 17.0,
   fontWeight: FontWeight.bold,
+  color: kPrimaryColor,
 );
 
 const kSubTitleStyle = TextStyle(
-  color: Color(0xff757575),
+  color: kSecondaryAccent,
   fontSize: 13.0,
   fontWeight: FontWeight.w500,
 );
 
 final kCustomThemeData = ThemeData(
   useMaterial3: true,
-  // splashColor: Colors.transparent,
-  // highlightColor: Colors.transparent,
-  // splashFactory: NoSplash.splashFactory,
-  colorScheme: const ColorScheme.light(primary: kPrimaryColor),
-  iconTheme: const IconThemeData(color: kSecondaryColor),
+  colorScheme: ColorScheme.light(
+    primary: kPrimaryColor,
+    secondary: kSecondaryColor,
+    surface: Colors.white,
+    background: kHighLightColor,
+    error: Colors.red.shade700,
+  ),
+  iconTheme: IconThemeData(color: kSecondaryColor),
   navigationBarTheme: NavigationBarThemeData(
     elevation: 10.0,
     height: 70.0,
-    iconTheme: const WidgetStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: kSecondaryColor),
     ),
-    indicatorColor: const Color(0xff66bb6a),
-    backgroundColor: Colors.grey.shade100,
+    indicatorColor: kAccentColor,
+    backgroundColor: Colors.white,
     surfaceTintColor: Colors.white,
   ),
-  tabBarTheme: const TabBarTheme(
+  tabBarTheme: TabBarTheme(
     labelColor: kPrimaryColor,
-    indicatorColor: kPrimaryColor,
+    indicatorColor: kAccentColor,
     dividerColor: kHighLightColor,
     labelStyle: TextStyle(fontWeight: FontWeight.bold),
   ),
-  inputDecorationTheme: const InputDecorationTheme(
-    prefixIconColor: Colors.grey,
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Colors.grey,
+  inputDecorationTheme: InputDecorationTheme(
+    prefixIconColor: kSecondaryAccent,
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: kSecondaryAccent),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: kSecondaryAccent),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: kPrimaryColor, width: 2),
+    ),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: kPrimaryColor,
+      foregroundColor: Colors.white,
+      elevation: 2,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
+    ),
+  ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: kPrimaryColor,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    ),
+  ),
+  cardTheme: CardTheme(
+    elevation: 4,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
     ),
   ),
 );

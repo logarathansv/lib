@@ -6,6 +6,7 @@ import 'package:sklyit_business/screens/settings/personal_details.dart';
 import 'package:sklyit_business/screens/settings/subscription_page.dart';
 import '../../api/auth_api/logout_api.dart';
 import '../../providers/business_main.dart';
+import '../../widgets/notifications/notifications.dart';
 import 'business_display_profile.dart';
 import 'help_page.dart';
 
@@ -14,6 +15,17 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
+          actions: [
+            IconButton(
+              icon: Icon(HugeIcons.strokeRoundedNotification01, color: Colors.black),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  _createRoute(NotificationsPage()),
+                );
+              },
+            ),
+          ],
           title: RichText(
             text: const TextSpan(
               children: [
@@ -34,7 +46,7 @@ class SettingsPage extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFF4C345), // Custom color for "Professional"
                   ),
-                ),
+                )
               ],
             ),
           )),

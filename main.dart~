@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sklyit_business/screens/auth/LoginPage.dart';
 import 'package:sklyit_business/screens/business_view/customer_perspective.dart';
 import 'package:sklyit_business/screens/chat/chat_dashboard.dart';
+import 'package:sklyit_business/screens/flash/flash_main.dart';
 import 'package:sklyit_business/utils/socket/socket_service.dart';
 import 'api/check_refresh.dart';
 import 'screens/business_view/business_perspective.dart';
@@ -223,9 +224,8 @@ class _PersonalCareBusinessPageState
     super.initState();
     _pages = [
       ShowToolsPage(),
-      NotificationsPage(),
-      Center(child: Text('Under Construction')),
       CustomerPerspective(),
+      FlashScreen(),
       ChatDashboard(uid: uid),
       SettingsPage(),
     ];

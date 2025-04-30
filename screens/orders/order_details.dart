@@ -1,13 +1,13 @@
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:sklyit_business/screens/customers/customer_details.dart';
-import '../../models/customer_model/customer_class.dart';
-import '../../models/order_model/order_model.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+
+import '../../models/order_model/order_model.dart';
+import '../../widgets/generate_pdf/invoice_sharing.dart';
 import '../../widgets/generate_pdf/pdf_generator.dart';
-import '../../widgets/generate_pdf/preview_share_pdf.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final Order order;
@@ -34,7 +34,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         backgroundColor: const Color(0xfff4c345),
         automaticallyImplyLeading: false,
         leading: IconButton(
-          onPressed: () => {Navigator.of(context).pop()},
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
           icon: const HugeIcon(
             icon: HugeIcons.strokeRoundedArrowLeft03,
             color: Colors.black,
@@ -50,155 +52,420 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display Date and Time
-            Text(
-              'Order Date: $formattedDate',
-              style: const TextStyle(fontSize: 16, color: Color(0xFF2f4757)),
-            ),
-            Text(
-              'Order Time: $formattedTime',
-              style: const TextStyle(fontSize: 16, color: Color(0xFF2f4757)),
+            // Order ID and Date Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF028F83).withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildDetailRow('Order ID:', widget.order.orderId),
+                  const Divider(height: 20),
+                  _buildDetailRow('Date:', formattedDate),
+                  const Divider(height: 20),
+                  _buildDetailRow('Time:', formattedTime),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
 
-            // Display Customer Name with Icons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Customer: ${widget.order.customerName}',
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2f4757)),
-                ),
-                IconButton(
-                  icon: const HugeIcon(
-                    icon: HugeIcons.strokeRoundedUserSquare,
-                    color: Colors.black,
-                    size: 24.0,
+            // Customer Details Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF028F83).withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CustomerDetailsPage(
-                          customer: Customer(
-                            custId: widget.order.customerId,
-                            name: widget.order.customerName,
-                            address: widget.order.customerAddress,
-                            email: widget.order.customerEmail,
-                            phoneNumber: widget.order.customerMobile,
-                            createdAt: widget.order.customerCreatedAt,
-                          ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF028F83),
+                        size: 24,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Customer Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF028F83),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Services List with their Amounts
-            const Text(
-              'Services:',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF028F83)),
-            ),
-            const SizedBox(height: 8),
-            for (Map<String,dynamic> service in widget.order.services)
-              Text(
-                '- ${service['sname']}: \₹${service['cost']}',
-                style: const TextStyle(color: Color(0xFF2f4757)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDetailRow('Name:', widget.order.customerName),
+                  const Divider(height: 20),
+                  _buildDetailRow('Address:', widget.order.customerAddress),
+                  const Divider(height: 20),
+                  _buildDetailRow('Phone:', widget.order.customerMobile),
+                  const Divider(height: 20),
+                  _buildDetailRow('Email:', widget.order.customerEmail),
+                ],
               ),
-
-            const SizedBox(height: 20),
-
-            // Products List with their Quantities
-            const Text(
-              'Products:',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF028F83)),
             ),
-            const SizedBox(height: 8),
-            for (var product in widget.order.products)
-              Text(
-                '- ${product['pname']} (Qty: ${product['quantity']} : ₹${product['cost']})',
-                style: const TextStyle(color: Color(0xFF2f4757)),
-              ),
-
             const SizedBox(height: 20),
 
-            // Total Amount
-            _buildDetailRow(
-                'Total Amount:', '₹${widget.order.totalAmount}'),
+            // Services Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF028F83).withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.miscellaneous_services_outlined,
+                        color: Color(0xFF028F83),
+                        size: 24,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Services',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF028F83),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...widget.order.services.map((service) => Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6F3F2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                service['sname'],
+                                style: const TextStyle(
+                                  color: Color(0xFF2f4757),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'Rs. ${service['cost']}',
+                              style: const TextStyle(
+                                color: Color(0xFF028F83),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  )).toList(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Products Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF028F83).withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.inventory_2_outlined,
+                        color: Color(0xFF028F83),
+                        size: 24,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Products',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF028F83),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...widget.order.products.map((product) => Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6F3F2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product['pname'],
+                                    style: const TextStyle(
+                                      color: Color(0xFF2f4757),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Quantity: ${product['quantity']}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF2f4757),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              'Rs. ${product['cost']}',
+                              style: const TextStyle(
+                                color: Color(0xFF028F83),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  )).toList(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Total Amount Card
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF028F83),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF028F83).withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total Amount:',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Rs. ${widget.order.totalAmount}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 30),
 
             // Generate Invoice Button
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _pdfDataFuture = generateInvoicePdf(
-                    shopName: widget.order.shopName,
-                    shopAddress: widget.order.shopAddress,
-                    phoneNumber: widget.order.shopPhoneNumber,
-                    emailAddress: widget.order.shopEmail,
-                    invoiceNumber: 'INV-${Random().nextInt(100000).toString().padLeft(5, '0')}',
-                    dateTime: DateTime.now(),
-                    customerName: widget.order.customerName,
-                    customerAddress: widget.order.customerAddress,
-                    customerPhone: widget.order.customerMobile,
-                    customerEmail: widget.order.customerEmail,
-                    orderDetails: [
-                      ...widget.order.services.map((service) => {
-                            'serviceName': service['sname'],
-                            'cost': {service['cost']},
-                          }),
-                      ...widget.order.products.map((product) => {
-                            'serviceName': product['pname'],
-                            'cost': product['quantity'] * product['cost'], // Example cost
-                          }),
-                    ],
-                    totalAmount: widget.order.totalAmount,
-                  );
-                });
-              },
-              child: const Text('Generate Invoice'),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF028F83).withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _pdfDataFuture = generateInvoicePdf(
+                      shopName: widget.order.shopName,
+                      shopAddress: widget.order.shopAddress,
+                      phoneNumber: widget.order.shopPhoneNumber,
+                      emailAddress: widget.order.shopEmail,
+                      invoiceNumber: 'INV-${Random().nextInt(100000).toString().padLeft(5, '0')}',
+                      dateTime: DateTime.now(),
+                      customerName: widget.order.customerName,
+                      customerAddress: widget.order.customerAddress,
+                      customerPhone: widget.order.customerMobile,
+                      customerEmail: widget.order.customerEmail,
+                      orderDetails: [
+                        ...widget.order.services.map((service) => {
+                              'serviceName': service['sname'],
+                              'cost': service['cost'],
+                              'quantity': service['quantity'],
+                            }),
+                        ...widget.order.products.map((product) => {
+                              'serviceName': product['pname'],
+                              'cost': product['cost'],
+                              'quantity': product['quantity'],
+                            }),
+                      ],
+                      totalAmount: widget.order.totalAmount,
+                    );
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF028F83),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Generate Invoice',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             FutureBuilder<Uint8List>(
               future: _pdfDataFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasData) {
                   return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  PDFViewerScreen(pdfData: snapshot.data!),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF028F83).withOpacity(0.3),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
                             ),
-                          );
-                        },
-                        child: const Text('View Invoice'),
+                          ],
+                        ),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    PDFViewerScreen(pdfData: snapshot.data!),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.visibility),
+                          label: const Text('View'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF028F83),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
                       ),
-                      ElevatedButton(
-                          onPressed: () async => {shareInvoice(snapshot.data!)},
-                          child: const Text('Share Invoice'))
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF028F83).withOpacity(0.3),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await InvoiceSharing.shareInvoiceAsPdf(snapshot.data!);
+                          },
+                          icon: const Icon(Icons.share),
+                          label: const Text('Share PDF'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF028F83),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   );
                 } else {
@@ -242,7 +509,9 @@ class PDFViewerScreen extends StatelessWidget {
         backgroundColor: const Color(0xfff4c345),
         automaticallyImplyLeading: false,
         leading: IconButton(
-          onPressed: () => {Navigator.of(context).pop()},
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
           icon: const HugeIcon(
             icon: HugeIcons.strokeRoundedArrowLeft03,
             color: Colors.black,
