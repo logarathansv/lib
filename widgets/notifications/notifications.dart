@@ -182,10 +182,14 @@ class _NotificationsPageState extends State<NotificationsPage>
 
 class Product {
   final String name;
+  final int quantity;
+  final double price;
   bool checked;
 
   Product({
     required this.name,
+    this.quantity = 1,
+    required this.price,
     this.checked = false,
   });
 }
@@ -195,15 +199,17 @@ class PopupPage extends StatefulWidget {
 
   @override
   State<PopupPage> createState() => _PopupPageState();
-  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 }
 
 class _PopupPageState extends State<PopupPage> {
   final List<Product> _products = [
-    Product(name: 'Product 1'),
-    Product(name: 'Product 2'),
-    Product(name: 'Product 3'),
+    Product(name: 'Product 1',quantity: 1, price: 100.0),
+    Product(name: 'Product 2', quantity: 1, price: 200.0),
+    Product(name: 'Product 3', quantity: 3, price: 150.0),
+    Product(name: 'Product 4', quantity: 4, price: 400.0),
   ];
+
+  bool _showAll = false;
   
   int _secondsRemaining = 60;
   late Timer _timer;
@@ -233,31 +239,48 @@ class _PopupPageState extends State<PopupPage> {
     }
   });
 }
+  
+    // Function to calculate total payment based on selected products
+double get _totalPayment{
+  return _products.fold(0,(sum, product) => sum + (product.checked ? product.price * product.quantity : 0));
+}
 
 @override
-@override
 Widget build(BuildContext context) {
+  List<Product> visibleProducts = _showAll ? _products : _products.take(3).toList();
   return Scaffold(
     backgroundColor: Colors.transparent,
     appBar: null,
     body: Column(
       children: [
-        // Status message area at the top
-        /*
-        Container(
-          color: Colors.transparent,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          width: double.infinity,
-          alignment: Alignment.center,
-          child: const SizedBox.shrink(), // Placeholder for messages
-        ),
-        */
         // Half-circle timer below message area
         Stack(
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
           children: [
+             Positioned(
+              top: -30,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.shopping_bag, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Order',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              ),
+            ),
             Container(
+              margin: const EdgeInsets.only(top: 30),
               width: 100,
               height: 50,
               decoration: BoxDecoration(
@@ -288,44 +311,97 @@ Widget build(BuildContext context) {
           ],
         ),
         
-        Container(
-          color: Colors.orange,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          width: double.infinity,
-          child: const Text(
-            'Order',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+        // Order section with icon and total
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              color: Colors.orange,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              width: double.infinity,
             ),
+            Container(
+              color: Colors.orange,
+              padding: const EdgeInsets.only(bottom: 12),
+              width: double.infinity,
+              child: Text(
+                'Total Payment : ₹${_totalPayment.toStringAsFixed(2)}', // Replace this with your dynamic value
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        Container(
+          color: Colors.grey.shade200,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          child:Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text("Product Name", style : TextStyle(fontWeight: FontWeight.bold)),
+              Text("Quantity", style : TextStyle(fontWeight: FontWeight.bold)),
+              Text("Price", style : TextStyle(fontWeight: FontWeight.bold)),
+            ],
           ),
         ),
         
         // Product list
         Expanded(
-          child: Container(
-            color: Colors.white,
-            child: ListView.builder(
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                return CheckboxListTile(
-                  title: Text(_products[index].name),
-                  value: _products[index].checked,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      _products[index].checked = value ?? false;
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.white,
-                  checkColor: Colors.black,
-                );
-              },
+            child: Container(
+              color: Colors.white,
+              child: ListView.builder(
+                itemCount: visibleProducts.length + (_showAll || _products.length <= 3 ? 0 : 1),
+                itemBuilder: (context, index) {
+                  if (index < visibleProducts.length) {
+                    final product = visibleProducts[index];
+                    return CheckboxListTile(
+                      value: product.checked,
+                      onChanged: (val) {
+                        setState(() {
+                          product.checked = val ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Row(
+                        children: [
+                          Expanded(
+                            flex: 4,
+                            child: Text(product.name),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Center(child: Text('${product.quantity}')),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Text('₹${product.price.toStringAsFixed(2)}'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Center(
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _showAll = true;
+                          });
+                        },
+                        child: const Text("View More"),
+                      ),
+                    );
+                  }
+                },
+              ),
             ),
           ),
-        ),
         
         // Modified Accept Order button
         Container(
@@ -398,4 +474,3 @@ void showFilterPopup(BuildContext context) {
     },
   );
 }
-
