@@ -28,6 +28,7 @@ class Endpoints {
   static const String getInventory = '/bs/products';
   static const String getProducts='/bs/business/product';
   static const String addBusinessProduct = '/bs/business/products';
+  static const String addBusinessProducts = '/bs/business/multipleproducts';
   static const String editInventory='/bs/products';
   static const String editBusinessProduct ='/bs/business/product';
   static const String deleteProduct='/bs/products';

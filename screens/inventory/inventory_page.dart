@@ -1,5 +1,9 @@
+import 'package:csv/csv.dart';
+import 'package:excel/excel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/utils/add_existing_dialog.dart';
 
@@ -18,11 +22,14 @@ class InventoryPage extends ConsumerStatefulWidget {
 }
 
 class _InventoryPageState extends ConsumerState<InventoryPage> {
+  List<Map<String, dynamic>> _importedProducts = [];
+  bool _isImporting = false;
   List<Product> products = [];
   final _searchController = TextEditingController();
   List<Product> _searchResults = [];
   bool _isSearching = false;
   bool _showAddProducts = false;
+  var filteredProducts = <ProductInventory>[];
 
   @override
   void initState() {
@@ -41,6 +48,173 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _importProducts() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv', 'xlsx'],
+        allowMultiple: false,
+        withData: true, // Ensure we get the file data
+      );
+
+      if (result == null || result.files.isEmpty) {
+        throw Exception('No file selected');
+      }
+
+      final file = result.files.first;
+      if (file.bytes == null || file.bytes!.isEmpty) {
+        throw Exception('File is empty or could not be read');
+      }
+
+      setState(() => _isImporting = true);
+      final bytes = file.bytes!;
+      final filename = file.name;
+
+      List<Map<String, dynamic>> products = [];
+
+      if (filename.endsWith('.csv')) {
+          final csv = const CsvToListConverter().convert(String.fromCharCodes(bytes));
+          // Skip header row and validate row data
+          for (var i = 1; i < csv.length; i++) {
+            if (csv[i].length >= 3) {
+              products.add({
+                'name': csv[i][0]?.toString() ?? '',
+                'price': csv[i][1]?.toString() ?? '0',
+                'quantity': csv[i][2]?.toString() ?? '0',
+              });
+            }
+          }
+        } else if (filename.endsWith('.xlsx')) {
+          final excel = Excel.decodeBytes(bytes);
+          if (excel.tables.isEmpty) {
+            throw Exception('Excel file has no sheets');
+          }
+          final sheet = excel.tables[excel.tables.keys.first]!;
+          // Skip header row
+          for (var i = 1; i < sheet.maxRows; i++) {
+            final name = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i)).value;
+            final price = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i)).value;
+            final quantity = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i)).value;
+            
+            if (name != null) {
+              products.add({
+                'name': name.toString(),
+                'price': price?.toString() ?? '0',
+                'quantity': quantity?.toString() ?? '0',
+              });
+            }
+          }
+        }
+
+        // Match products with inventory
+        final inventoryProducts = await ref.read(getInventoryProvider.future);
+        List<Map<String, dynamic>> matchedProducts = [];
+        List<Map<String, dynamic>> newProducts = [];
+
+        for (var product in products) {
+          try {
+            final match = inventoryProducts.firstWhere(
+              (p) => p.name.toLowerCase() == product['name'].toString().toLowerCase(),
+            );
+            matchedProducts.add({...product, 'matched': match});
+          } catch (e) {
+            newProducts.add(product);
+          }
+        }
+
+        if (matchedProducts.isNotEmpty) {
+          await showDialog(
+            context: context,
+            builder: (context) => StatefulBuilder(
+              builder: (context, setDialogState) => AlertDialog(
+                title: const Text('Matching Products Found'),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: matchedProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = matchedProducts[index];
+                      return ListTile(
+                        title: Text(product['name']),
+                        subtitle: Text('Price: \$${product['price']} - Quantity: ${product['quantity']}'),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () {
+                            setDialogState(() {
+                              matchedProducts.removeAt(index);
+                              newProducts.add(product);
+                              if (matchedProducts.isEmpty) {
+                                Navigator.of(context).pop();
+                              }
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xfff4c345),
+                  ),
+                  child: const Text('Update Products'),
+                ),
+              ],
+            ),
+            )
+          );
+        }
+        // Restructure products for batch import
+        final List<Map<String, dynamic>> batchProducts = [...matchedProducts].map((product) {
+          final filteredProduct = filteredProducts.firstWhere(
+            (p) => p.name.toLowerCase() == product['name'].toString().toLowerCase(),
+          );
+          print(product);
+          print(filteredProduct);
+          return {
+            'productId': filteredProduct.id,
+            'price': product['price'],
+            'quantity': product['quantity'],
+          };
+        }).toList();
+
+        // Batch import products
+        await ref.read(productApiProvider.future).then((service) {
+          return service.addProducts(batchProducts);
+        });
+
+        // Show success toast
+        Fluttertoast.showToast(
+          msg: 'Successfully imported ${batchProducts.length} products',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+
+        // Refresh products list
+        ref.invalidate(getProductsProvider);
+      
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Error importing products: $e',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() => _isImporting = false);
+    }
   }
 
   Future<void> getProducts() async {
@@ -222,23 +396,42 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                 parent: ModalRoute.of(context)!.animation!,
                 curve: Curves.easeOut,
               )),
-              child: TextButton.icon(
-                onPressed: _addProduct,
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  color: Color(0xfff4c345),
-                  size: 20,
-                ),
-                label: const Text(
-                  'Custom',
-                  style: TextStyle(
-                    color: Color(0xfff4c345),
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: _importProducts,
+                    icon: _isImporting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xfff4c345)),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.upload_file,
+                            color: Color(0xfff4c345),
+                            size: 20,
+                          ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.all(8),
+                    ),
                   ),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _addProduct,
+                    icon: const Icon(
+                      Icons.add_circle_outline, 
+                      color: Color(0xfff4c345),
+                      size: 20,
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ),
+                ],
               ),
             ),
           IconButton(
@@ -390,13 +583,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       },
     );
   }
-
+  
   Widget _buildAvailableProductsGrid() {
     final inventoryAsync = ref.watch(getInventoryProvider);
 
     return inventoryAsync.when(
       data: (availableProducts) {
-        final filteredProducts = _searchController.text.isEmpty
+        filteredProducts = _searchController.text.isEmpty
             ? availableProducts
             : availableProducts.where((product) =>
                 product.name.toLowerCase().contains(_searchController.text.toLowerCase()) ||

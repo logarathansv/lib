@@ -97,6 +97,25 @@ class ProductService {
     }
   }
 
+  Future<void> addProducts(List<Map<String, dynamic>> data) async {
+    try{
+      print(data);
+      final response = await _dio.post(
+          Endpoints.addBusinessProducts,
+          data: data
+      );
+      print(response.data);
+      if(response.statusCode == 201){
+        print('Products added successfully!');
+      } else {
+        print('Failed to add products: ${response.statusCode}');
+      }
+    }
+    catch (error){
+      throw Exception("Failed to add Products:$error");
+    }
+  }
+
   Future<void> deleteProduct(String productId) async {
     try {
       final response = await _dio.delete(
