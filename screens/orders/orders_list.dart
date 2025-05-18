@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:sklyit_business/screens/orders/add_orders_page.dart';
+
 import '../../models/customer_model/customer_class.dart';
 import '../../models/order_model/order_model.dart';
 import '../../models/product_model/product_model.dart'; // Import the Product class
@@ -10,32 +12,48 @@ import '../../providers/order_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/service_provider.dart';
 import 'order_details.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
 class AddOrdersPage extends ConsumerStatefulWidget {
   final bool autoTriggerAddOrder;
+  final Customer? quickOrderCustomer;
 
-  const AddOrdersPage({super.key, this.autoTriggerAddOrder = false});
+  const AddOrdersPage({
+    super.key, 
+    this.autoTriggerAddOrder = false,
+    this.quickOrderCustomer,
+  });
 
   @override
   ConsumerState<AddOrdersPage> createState() => _AddOrdersPageState();
 }
 
-class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
-  // Sample orders data
-   List<Order> orders = [];
-
+class _AddOrdersPageState extends ConsumerState<AddOrdersPage> with SingleTickerProviderStateMixin {
+  List<Order> orders = [];
   final _searchController = TextEditingController();
   List<Customer> customers = [];
   List<Service> services = [];
   List<Product> products = [];
   List<Order> _searchResults = [];
-  String _filterType = 'All'; // Default filter
+  String _filterType = 'All';
+  late final TabController _tabController;
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: 0,
+    );
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {
+          _currentTabIndex = _tabController.index;
+        });
+      }
+    });
     if (widget.autoTriggerAddOrder) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateToAddOrderPage();
@@ -43,6 +61,12 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
     }
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void getServices() async{
     final servicesAsync = ref.watch(getServicesProvider);
@@ -104,6 +128,8 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
           services: services,
           products: products,
           existingCustomers: customers,
+          isQuickOrder: widget.quickOrderCustomer != null,
+          quickOrderCustomer: widget.quickOrderCustomer,
         ),
       ),
     );
@@ -140,207 +166,321 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
         ),
       ),
       body: ordersAsync.when(
-      data: (fetchedServices){
-        orders=fetchedServices;
-        getServices();
-        getProducts();
-        getCustomers();
-        return _buildOrdersList();
-      },
-      error: (error,stackTrace){
-        print("Error Loading services: $error");
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-    ),
+        data: (fetchedServices) {
+          orders = fetchedServices;
+          getServices();
+          getProducts();
+          getCustomers();
+          return _buildOrdersList();
+        },
+        error: (error, stackTrace) {
+          print("Error Loading services: $error");
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading orders: $error',
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xfff4c345)),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildOrdersList() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Search Bar
-          _buildSearchBar(),
-          const SizedBox(height: 16),
-
-          // Filter Tags
-          SizedBox(
-            height: 40,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildFilterTag('All'),
-                _buildFilterTag('Recent'),
-                _buildFilterTag('Old'),
-                _buildFilterTag('Amount: Low to High'),
-                _buildFilterTag('Amount: High to Low'),
-                _buildFilterTag('Date: Oldest First'),
-                _buildFilterTag('Date: Newest First'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Add Order Button
-          ElevatedButton.icon(
-            onPressed: () async {
-              // Navigate to the AddOrderPage
-              final newOrder = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddOrderPage(
-                    services: services,
-                    products: products, // Pass the products list
-                    existingCustomers: customers,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xfff4c345), Colors.white],
+          stops: [0.0, 0.1],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Search Bar with modern design
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
                   ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Search orders...",
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFF2f4757)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: Color(0xFF2f4757)),
+                          onPressed: () {
+                            _searchController.clear();
+                            _searchOrders();
+                          },
+                        )
+                      : null,
                 ),
-              );
-
-              // If a new order is returned, add it to the list
-              if (newOrder != null) {
-                setState(() {
-                  orders.add(newOrder);
-                });
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2f4757),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                onChanged: (text) => _searchOrders(),
               ),
             ),
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              'Add Order',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Orders List
-          Expanded(
-            child: ListView.builder(
-              itemCount: _searchResults.isEmpty
-                  ? _getFilteredOrders().length
-                  : _searchResults.length,
-              itemBuilder: (context, index) {
-                final order = _searchResults.isEmpty
-                    ? _getFilteredOrders()[index]
-                    : _searchResults[index];
-                return GestureDetector(
-                  onTap: () => {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder:
-                            (context, animation, secondaryAnimation) =>
-                            OrderDetailsPage(order: order),
-                        transitionDuration: const Duration(milliseconds: 200),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1, 0),
-                              end: const Offset(0, 0),
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
+            // Tab Bar with modern design
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: UnderlineTabIndicator(
+                  borderSide: const BorderSide(
+                    width: 3.0,
+                    color: Color(0xFF2f4757),
+                  ),
+                  insets: const EdgeInsets.symmetric(horizontal: 20.0),
+                ),
+                labelColor: const Color(0xFF2f4757),
+                unselectedLabelColor: Colors.grey,
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                ),
+                tabs: const [
+                  Tab(text: 'Regular Orders'),
+                  Tab(text: 'Quick Orders'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Filter Tags with modern design
+            if (_currentTabIndex == 0)
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  children: [
+                    _buildFilterTag('All'),
+                    _buildFilterTag('Recent'),
+                    _buildFilterTag('Old'),
+                    _buildFilterTag('Amount: Low to High'),
+                    _buildFilterTag('Amount: High to Low'),
+                    _buildFilterTag('Date: Oldest First'),
+                    _buildFilterTag('Date: Newest First'),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
+
+            // Add Order Button with modern design
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final newOrder = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddOrderPage(
+                        services: services,
+                        products: products,
+                        existingCustomers: customers,
+                        isQuickOrder: _currentTabIndex == 1,
+                        quickOrderCustomer: _currentTabIndex == 1
+                            ? Customer(
+                                custId: 'quick_order',
+                                name: 'Quick Order',
+                                email: 'quick@order.com',
+                                phoneNumber: '0000000000',
+                                address: 'Quick Order Address',
+                                createdAt: DateTime.now().toIso8601String(),
+                              )
+                            : null,
                       ),
-                    )
-                  },
-                  child: _buildOrderCard(order, context),
-                );
-              },
+                    ),
+                  );
+
+                  if (newOrder != null) {
+                    setState(() {
+                      orders.add(newOrder);
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2f4757),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text(
+                  _currentTabIndex == 0 ? 'Add Regular Order' : 'Add Quick Order',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-  // Search Bar
-  Widget _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: TextField(
-        controller: _searchController,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          hintText: "Search... ",
-          prefixIcon: Icon(Icons.search),
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            const SizedBox(height: 16),
+
+            // Orders List with modern design
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Regular Orders Tab
+                  _buildOrderListView(_getRegularOrders()),
+                  // Quick Orders Tab
+                  _buildOrderListView(_getQuickOrders()),
+                ],
+              ),
+            ),
+          ],
         ),
-        onChanged: (text) => {_searchOrders()},
       ),
     );
   }
 
-  // Build a filter tag
-  Widget _buildFilterTag(String label) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _filterType = label;
-        });
+  List<Order> _getRegularOrders() {
+    return orders.where((order) => order.customerName != 'Quick Order').toList();
+  }
+
+  List<Order> _getQuickOrders() {
+    return orders.where((order) => order.customerName == 'Quick Order').toList();
+  }
+
+  Widget _buildOrderListView(List<Order> ordersToDisplay) {
+    final displayOrders = _searchResults.isEmpty
+        ? _getFilteredOrders(ordersToDisplay)
+        : _searchResults.where((order) => ordersToDisplay.contains(order)).toList();
+
+    return ListView.builder(
+      itemCount: displayOrders.length,
+      itemBuilder: (context, index) {
+        final order = displayOrders[index];
+        return GestureDetector(
+          onTap: () => {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    OrderDetailsPage(order: order),
+                transitionDuration: const Duration(milliseconds: 200),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1, 0),
+                      end: const Offset(0, 0),
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
+              ),
+            )
+          },
+          child: _buildOrderCard(order, context),
+        );
       },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color:
-              _filterType == label ? const Color(0xfff4c345) : Colors.grey[300],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: _filterType == label ? Colors.white : Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 
-  // Filter orders based on the selected filter type
-  List<Order> _getFilteredOrders() {
-    // return orders;
+  List<Order> _getFilteredOrders(List<Order> ordersToFilter) {
+    if (_currentTabIndex == 1) return ordersToFilter;
+    
     switch (_filterType) {
       case 'Recent':
-        return orders
+        return ordersToFilter
             .where((order) => DateTime.parse(order.orderDate)
                 .isAfter(DateTime.now().subtract(Duration(days: 7))))
             .toList();
       case 'Old':
-        return orders
+        return ordersToFilter
             .where((order) => DateTime.parse(order.orderDate)
                 .isBefore(DateTime.now().subtract(Duration(days: 7))))
             .toList();
       case 'Amount: Low to High':
-        return List.from(orders)..sort((a, b) => a.totalAmount.compareTo(b.totalAmount));
+        return List.from(ordersToFilter)..sort((a, b) => a.totalAmount.compareTo(b.totalAmount));
       case 'Amount: High to Low':
-        return List.from(orders)..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+        return List.from(ordersToFilter)..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
       case 'Date: Oldest First':
-        return List.from(orders)
+        return List.from(ordersToFilter)
           ..sort((a, b) => DateTime.parse(a.orderDate).compareTo(DateTime.parse(b.orderDate)));
       case 'Date: Newest First':
-        return List.from(orders)
+        return List.from(ordersToFilter)
           ..sort((a, b) => DateTime.parse(b.orderDate).compareTo(DateTime.parse(a.orderDate)));
       default:
-        return orders;
+        return ordersToFilter;
     }
   }
 
   // Search orders
   void _searchOrders() {
     setState(() {
-      _searchResults = _getFilteredOrders()
+      _searchResults = _getFilteredOrders(_getRegularOrders())
           .where((order) =>
               order.customerName
                   .toLowerCase()
@@ -370,125 +510,207 @@ class _AddOrdersPageState extends ConsumerState<AddOrdersPage> {
       print('Error sending order: $e');
     }
   }
-  // Order Card
+  // Enhanced Order Card design
   Widget _buildOrderCard(Order order, BuildContext context) {
+    final isQuickOrder = order.customerName == 'Quick Order';
+    
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Order Details
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              Colors.grey.shade100,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      order.services.isNotEmpty ? order.services.first['sname'] as String : '',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2f4757),
-                      ),
-                    ),
-                    if (order.services.length > 1)
-                      Text(
-                        ' and ${order.services.length - 1} more',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2f4757),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  order.customerName,
-                  style: const TextStyle(color: Color(0xFF028F83)),
-                ),
-                if (order.products.isNotEmpty)
-                  Text(
-                    'Products: ${order.products.length}',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-              ],
-            ),
-            // Action Icons
-            Row(
-              children: [
-                IconButton(
-                  icon: const HugeIcon(
-                    icon: HugeIcons.strokeRoundedArrowRightDouble,
-                    color: Colors.black,
-                    size: 24.0,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            OrderDetailsPage(order: order),
-                        transitionDuration: const Duration(milliseconds: 200),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1, 0),
-                              end: const Offset(0, 0),
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const HugeIcon(
-                    icon: Icons.delete_forever,
-                    color: Colors.red,
-                    size: 24.0,
-                  ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Delete Order'),
-                        content: Text('Are you sure you want to delete ${order.customerName}\'s order?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Cancel'),
+                    Row(
+                      children: [
+                        Text(
+                          order.services.isNotEmpty ? order.services.first['sname'] as String : '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2f4757),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              // Delete the order
-                              deleteOrder(order.orderId);
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.red),
+                        ),
+                        if (order.services.length > 1)
+                          Text(
+                            ' and ${order.services.length - 1} more',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2f4757),
                             ),
                           ),
-                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (!isQuickOrder) ...[
+                      Text(
+                        order.customerName,
+                        style: const TextStyle(
+                          color: Color(0xFF028F83),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    );
-                  },
+                      if (order.products.isNotEmpty)
+                        Text(
+                          'Products: ${order.products.length}',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF028F83).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Quick Order',
+                          style: TextStyle(
+                            color: Color(0xFF028F83),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₹${order.totalAmount}',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ),
-          ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowRightDouble,
+                      color: Color(0xFF2f4757),
+                      size: 24.0,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              OrderDetailsPage(order: order),
+                          transitionDuration: const Duration(milliseconds: 300),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const HugeIcon(
+                      icon: Icons.delete_forever,
+                      color: Colors.red,
+                      size: 24.0,
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Order'),
+                          content: Text(
+                            'Are you sure you want to delete ${isQuickOrder ? 'this Quick Order' : '${order.customerName}\'s order'}?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                deleteOrder(order.orderId);
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // Enhanced Filter Tag design
+  Widget _buildFilterTag(String label) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _filterType = label;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: _filterType == label ? const Color(0xFF2f4757) : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: _filterType == label ? const Color(0xFF2f4757) : Colors.grey.shade300,
+            width: 1.5,
+          ),
+          boxShadow: _filterType == label
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF2f4757).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: _filterType == label ? Colors.white : Colors.grey.shade700,
+            fontWeight: _filterType == label ? FontWeight.bold : FontWeight.w500,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
 }

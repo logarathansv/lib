@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String BASEURL = 'http://192.168.169.41:3000';
+  static const String BASEURL = 'http://192.168.203.41:3000';
   static const String users = '/users';
   static const String login = '/bs/auth/login';
   static const String register = '/users/register';
@@ -25,9 +25,12 @@ class Endpoints {
   static const String message = '/messages';
 
   //Inventory Management
-  static const String getProducts='/bs/product';
+  static const String getInventory = '/bs/products';
+  static const String getProducts='/bs/business/product';
+  static const String addBusinessProduct = '/bs/business/products';
   static const String editInventory='/bs/products';
-  static const String deleteProduct='/bs/product';
+  static const String editBusinessProduct ='/bs/business/product';
+  static const String deleteProduct='/bs/products';
 
   //Order Management
   static const String getOrders='/bs/orders';

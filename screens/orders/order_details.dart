@@ -85,6 +85,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             const SizedBox(height: 20),
 
             // Customer Details Card
+            if (widget.order.customerName != 'Quick Order')
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,

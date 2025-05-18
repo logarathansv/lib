@@ -1,27 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:sklyit_business/screens/customers/get_customer_details.dart';
-import '../../models/customer_model/customer_class.dart';
-import '../customers/customer_details.dart';
 
+import '../../models/customer_model/customer_class.dart';
+
+// ignore: must_be_immutable
 class BookingDetailsPage extends StatelessWidget {
   final String customerName;
   final List<String> services;
   final String date;
   final String time;
-  // final String address;
+  String? addressCity;
+  String? addressStreet;
+  String? addressDoorno;
+  String? addressPincode;
+  String? customerPhone;
+  final String status;
   final String serviceMode; // "At Home" or "At Place"
   // final bool isNewCustomer;
 
-  const BookingDetailsPage({
+  BookingDetailsPage({
     super.key,
     required this.customerName,
     required this.services,
     required this.date,
     required this.time,
-    // required this.address,
     required this.serviceMode,
-    // required this.isNewCustomer,
+    required this.status,
+    this.addressCity,
+    this.addressStreet,
+    this.addressDoorno,
+    this.addressPincode,
+    this.customerPhone,
   });
 
   @override
@@ -29,58 +38,65 @@ class BookingDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xfff4c345),
+        elevation: 2,
         automaticallyImplyLeading: false,
-        leading: IconButton(
-          onPressed: () => {Navigator.of(context).pop()},
-          icon: const HugeIcon(
-            icon: HugeIcons.strokeRoundedArrowLeft03,
-            color: Colors.black,
-            size: 24.0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const HugeIcon(
+              icon: HugeIcons.strokeRoundedArrowLeft03,
+              color: Colors.black87,
+              size: 24.0,
+            ),
           ),
         ),
         title: const Text(
           'Booking Details',
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF2f4757),
+            letterSpacing: 0.5,
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+        ),
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSectionCard(
-                  title: 'Customer Details',
-                  details: [
-                    _buildDetailRow(
-                      'Name',
-                      customerName,
-                    ),
-                    _buildDetailRow(
-                      'Date',
-                      date,
-                    ),
-                    _buildDetailRow(
-                      'Time',
-                      time,
-                    ),
-                  ],
-                  // isNewCustomer: isNewCustomer,
-                  context: context),
-              const SizedBox(height: 16),
+                title: 'Customer Details',
+                details: [
+                  _buildDetailRow('Name', customerName),
+                  _buildDetailRow('Date', date),
+                  _buildDetailRow('Time', time),
+                  if(status == 'Accepted') _buildDetailRow('Phone', customerPhone ?? ''),
+                  if(status == 'Accepted') _buildDetailRow(
+                    'Address',
+                    '${addressStreet ?? ''}, ${addressDoorno ?? ''}, ${addressPincode ?? ''}, ${addressCity ?? ''}',
+                  )
+                ],
+                context: context
+              ),
+              const SizedBox(height: 20),
               _buildSectionCard(
-                  title: 'Service Details',
-                  details: [
-                    _buildDetailRow('Service Mode', serviceMode),
-                    // _buildDetailRow('Address', address),
-                    _buildDetailRow('Services', services.join(', ')),
-                  ],
-                  // isNewCustomer: isNewCustomer,
-                  context: context),
+                title: 'Service Details',
+                details: [
+                  _buildDetailRow('Service Mode', serviceMode),
+                  _buildDetailRow('Services', services.join(', ')),
+                ],
+                context: context
+              ),
             ],
           ),
         ),
@@ -88,118 +104,103 @@ class BookingDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionCard(
-      {required String title,
-      required List<Widget> details,
-      // required bool isNewCustomer,
-      required BuildContext context}) {
-    List<Customer> customers = [
-
-    ];
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> details,
+    required BuildContext context
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceBetween, // Space between title and icon
-              crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSectionTitle(title), // Left-aligned title
-                const SizedBox(width: 10),
-                if (title == 'Customer Details' ) //&& isNewCustomer
-                  IconButton(
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                CustomerDetailsPage(customer: customers[0]))),
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedUserSquare,
-                      color: Colors.black,
-                      size: 24.0,
-                    ),
-                  )
-                else if (title == 'Customer Details')// && !isNewCustomer
-                  IconButton(
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AddNewCustomerPage())),
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedUserAdd02,
-                      color: Colors.black,
-                      size: 24.0,
-                    ),
-                  )
-                else if (title == 'Service Details')
-                  const Icon(
-                    HugeIcons.strokeRoundedSettings02,
-                    size: 24.0,
-                    color: Colors.black,
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2f4757),
+                    letterSpacing: 0.5,
                   ),
+                ),
+                Icon(
+                  title == 'Customer Details' 
+                    ? HugeIcons.strokeRoundedUserSquare
+                    : HugeIcons.strokeRoundedSettings02,
+                  color: const Color(0xFF2f4757),
+                  size: 22,
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            ...details,
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: details),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2f4757)),
     );
   }
 
   Widget _buildDetailRow(String label, String value) {
     return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.3),
-            Colors.white.withOpacity(0.3)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey[200]!,
+            width: 1,
+          ),
         ),
       ),
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
               label,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+                fontSize: 15,
+                color: Color(0xFF028F83),
+                fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.right,
             ),
-            Container(
-              child: Text(
-                value,
-                style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF028F83),
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

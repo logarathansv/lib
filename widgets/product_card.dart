@@ -60,7 +60,7 @@ class ProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     // Product Description
                     Text(
-                      product.description!,
+                      product.description ?? '',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[700],
