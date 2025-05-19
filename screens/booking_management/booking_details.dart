@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:sklyit_business/screens/chat/chat_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/customer_model/customer_class.dart';
 
 // ignore: must_be_immutable
 class BookingDetailsPage extends StatelessWidget {
+  final String? bookingId;
   final String customerName;
   final List<String> services;
   final String date;
@@ -14,6 +18,7 @@ class BookingDetailsPage extends StatelessWidget {
   String? addressDoorno;
   String? addressPincode;
   String? customerPhone;
+  String? customerId;
   final String status;
   final String serviceMode; // "At Home" or "At Place"
   // final bool isNewCustomer;
@@ -26,12 +31,17 @@ class BookingDetailsPage extends StatelessWidget {
     required this.time,
     required this.serviceMode,
     required this.status,
+    this.customerId,
+    this.bookingId,
     this.addressCity,
     this.addressStreet,
     this.addressDoorno,
     this.addressPincode,
     this.customerPhone,
   });
+
+  final storage = FlutterSecureStorage();
+  String? uid;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +84,63 @@ class BookingDetailsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (status == 'Accepted' && customerPhone != null && customerPhone!.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Contact Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            SizedBox(height: 8),
+                            Text(customerPhone ?? '', style: TextStyle(fontSize: 15)),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.call, color: Colors.green),
+                        onPressed: () async {
+                          
+                          final Uri url = Uri(scheme: 'tel', path: customerPhone);
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          }
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.chat, color: Colors.blue),
+                        onPressed: () async {
+                          uid = await storage.read(key: 'userId');
+                          print(customerId);
+                          print(uid);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                currentUserId: uid!,
+                                receiverId: customerId!,
+                                receiverName: customerName,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               _buildSectionCard(
                 title: 'Customer Details',
                 details: [

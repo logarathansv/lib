@@ -1,5 +1,6 @@
 class Booking {
   final String BookingId;
+  final String customerId;
   final String customerName;
   Map<String, dynamic> service;
   final String date;
@@ -15,6 +16,7 @@ class Booking {
 
   Booking({
     required this.BookingId,
+    required this.customerId,
     required this.customerName,
     required this.service,
     required this.date,
@@ -38,6 +40,7 @@ class Booking {
 
     return Booking(
       BookingId: json['BookingID'],
+      customerId: json['customer']['userId'],
       customerName: json['customer']['name'],
       customerPhone: json['customer']['mobileno'], // Assuming 'phone' is the field for phone number
       service: service,

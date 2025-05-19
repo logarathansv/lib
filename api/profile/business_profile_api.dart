@@ -16,7 +16,7 @@ class BusinessProfileAPIService{
     final response = await dio.get('${Endpoints.business_details}');
     print(response.data);
     if(response.statusCode == 200){
-      return BusinessProfile.fromJson(response.data);
+      return BusinessProfile.fromJson(response.data['business']);
     }
     else{
       throw Exception('Failed to load business profile');
@@ -61,13 +61,16 @@ class BusinessProfileAPIService{
     }
   }
 
-  Future<String> addAddress(List<Map<String, dynamic>> address) async {
+  Future<String> addAddress(Map<String, dynamic> address) async {
     try {
-      final response = await dio.put(
-          '${Endpoints.business_details}${Endpoints.add_address}', data: address);
+      final response = await dio.post(
+          '${Endpoints.business_details}${Endpoints.add_address}', data: {"address" : address});
       print(response.data);
       if (response.statusCode == 200 || response.statusCode == 201) {
         return 'Address Added Successfully';
+      }
+      else if(response.statusCode == 400){
+        return 'Enter a Valid Address';
       }
       else {
         throw Exception('Failed to add address');

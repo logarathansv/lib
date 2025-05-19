@@ -302,13 +302,13 @@ class BookingCard extends ConsumerWidget {
                                 TextButton(
                                   onPressed: () async {
                                     await updateStatus(ref, "Accepted");
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'Accepted ${booking.customerName}')),
-                                    );
-                                    ref.invalidate(getbookingProvider);
-                                    Navigator.of(context).pop();
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Accepted \${booking.customerName}')),
+                                      );
+                                      ref.invalidate(getbookingProvider);
+                                      Navigator.of(context).pop();
+                                    }
                                   },
                                   child: Text(
                                     'Accept',

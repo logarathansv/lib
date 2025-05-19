@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/crm_model/dashboard/customers_total.dart';
-import '../../../models/crm_model/dashboard/growth_rate.dart';
-import '../../../models/crm_model/dashboard/retention_rate.dart';
+import 'dashboard/customers_total.dart';
+import 'dashboard/growth_rate.dart';
+import 'dashboard/retention_rate.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -32,14 +32,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              CustomerGraph(),
-              GrowthRateGraph(),
-              const RetentionCard(
-                retentionRate: 50.0,
-              ),
+              const CustomerGraph(),
+              const GrowthRateGraph(),
+              const RetentionCard(),
               _buildRevenueCard(1000, 20),
-              const SizedBox(height: 20), // Spacing
-              _buildDataTable(),
             ],
           ),
         ),
@@ -111,53 +107,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     size: 50, color: Color(0xff036c7b)),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDataTable() {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Additional Data",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            DataTable(columns: const [
-              DataColumn(
-                  label: Text('Metric',
-                      style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(
-                  label: Text('Value',
-                      style: TextStyle(fontWeight: FontWeight.bold))),
-            ], rows: const [
-              DataRow(cells: [
-                DataCell(Text('Total Customers')),
-                DataCell(Text('1000')),
-              ]),
-              DataRow(cells: [
-                DataCell(Text('Growth Rate')),
-                DataCell(Text('15%')),
-              ]),
-              DataRow(cells: [
-                DataCell(Text('Retention Rate')),
-                DataCell(Text('80%')),
-              ]),
-              DataRow(cells: [
-                DataCell(Text('Churn Rate')),
-                DataCell(Text('20%')),
-              ]),
-            ]),
           ],
         ),
       ),

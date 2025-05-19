@@ -39,50 +39,26 @@ class BusinessProfile {
 
   factory BusinessProfile.fromJson(Map<String, dynamic> json) {
     return BusinessProfile(
-      clientName: json['Clientname'],
-      domainName: json['domainname'],
-      shopName: json['shopname'],
-      shopDesc: json['shopdesc'],
-      shopEmail: json['shopemail'],
-      shopImage: json['shopimage'],
-      shopMobile: json['shopmobile'],
-      addresses: (json['addresses'] as List)
+      clientName: json['Clientname'] ?? '',
+      domainName: json['domainname'] ?? '',
+      shopName: json['shopname'] ?? '',
+      shopDesc: json['shopdesc'] ?? '',
+      shopEmail: json['shopemail'] ?? '',
+      shopImage: json['shopimage'] ?? '',
+      shopMobile: json['shopmobile'] ?? '',
+      addresses: (json['addresses'] as List<dynamic>? ?? [])
           .map((address) => Address.fromJson(address))
           .toList(),
-      shopOpenTime: json['shopOpenTime'],
-      shopClosingTime: json['shopClosingTime'],
-      businessMainTags: List<String>.from(json['BusinessMainTags']),
-      businessSubTags: List<String>.from(json['BusinessSubTags']),
-      isEmailVerified: json['isEmailVerified'],
-      isPhoneVerified: json['isPhoneVerified'],
-      followers: List<String>.from(json['followers']),
-      shopLocations: json['shopLocations'],
+      shopOpenTime: json['shopOpenTime'] ?? '',
+      shopClosingTime: json['shopClosingTime'] ?? '',
+      businessMainTags:
+          (json['BusinessMainTags'] as List<dynamic>? ?? []).cast<String>(),
+      businessSubTags:
+          (json['BusinessSubTags'] as List<dynamic>? ?? []).cast<String>(),
+      isEmailVerified: json['isEmailVerified'] ?? false,
+      isPhoneVerified: json['isPhoneVerified'] ?? false,
+      followers: (json['followers'] as List<dynamic>? ?? []).cast<String>(),
+      shopLocations: json['shopLocations'] ?? '',
     );
   }
-  //
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'BusinessId': businessId,
-  //     'Clientname': clientName,
-  //     'domainname': domainName,
-  //     'shopname': shopName,
-  //     'shopdesc': shopDesc,
-  //     'shopemail': shopEmail,
-  //     'shopimage': shopImage,
-  //     'shopmobile': shopMobile,
-  //     'addresses': addresses.map((address) => address.toJson()).toList(),
-  //     'shopOpenTime': shopOpenTime,
-  //     'shopClosingTime': shopClosingTime,
-  //     'BusinessMainTags': businessMainTags,
-  //     'BusinessSubTags': businessSubTags,
-  //     'userId': userId,
-  //     'created_at': createdAt,
-  //     'isEmailVerified': isEmailVerified,
-  //     'isPhoneVerified': isPhoneVerified,
-  //     'followers': followers,
-  //     'shopLocations': shopLocations,
-  //     'OpenStatus': openStatus,
-  //     'loyaltypts': loyaltyPts,
-  //   };
-  // }
 }

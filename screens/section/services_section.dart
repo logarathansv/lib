@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:io'; // For handling file images
-import 'package:image_picker/image_picker.dart';
 import 'package:sklyit_business/models/service_model/service_model.dart'; // For picking images from gallery
 
 class ServicesSection extends StatefulWidget {
@@ -20,124 +19,21 @@ class _ServicesSectionState extends State<ServicesSection> {
 
   @override
   Widget build(BuildContext context) {
-    final popularServices = widget.services
-        .toList();
-    final otherServices = widget.services
-        .toList();
+    final otherServices = widget.services.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHorizontalSection('Popular Services', popularServices),
         const SizedBox(height: 20),
         _buildHorizontalSection('Our Services', otherServices),
       ],
     );
   }
 
-  // Handle adding a new service (you can use the ImagePicker to allow business users to upload images)
-  // void _addService() async {
-  //   final picker = ImagePicker();
-  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-  //
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       widget.services.add({
-  //         'imageUrl': pickedFile.path, // Add the image path from the gallery
-  //         'name': 'New Service', // Name of the service
-  //         'description': 'Describe this service', // Service description
-  //         'price': '0', // Price of the service
-  //         'isPopular': false, // Default to non-popular
-  //       });
-  //     });
-  //   }
-  // }
-
-  // void _editService(Map<String, dynamic> service) {
-  //   // Controllers for editing fields
-  //   TextEditingController nameController =
-  //       TextEditingController(text: service['name']);
-  //   TextEditingController descriptionController =
-  //       TextEditingController(text: service['description']);
-  //   TextEditingController priceController =
-  //       TextEditingController(text: service['price']);
-  //
-  //   showDialog(
-  //     context: context,
-  //     barrierDismissible: false, // Prevent accidental closing
-  //     builder: (context) => StatefulBuilder(
-  //       builder: (context, setDialogState) {
-  //         return AlertDialog(
-  //           title: const Text('Edit Service'),
-  //           content: SingleChildScrollView(
-  //             child: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: [
-  //                 // Name Field
-  //                 TextField(
-  //                   controller: nameController,
-  //                   decoration: const InputDecoration(
-  //                     labelText: 'Service Name',
-  //                     border: OutlineInputBorder(),
-  //                   ),
-  //                   autofocus: true, // Automatically focus this input
-  //                 ),
-  //                 const SizedBox(height: 10),
-  //                 // Description Field
-  //                 TextField(
-  //                   controller: descriptionController,
-  //                   decoration: const InputDecoration(
-  //                     labelText: 'Description',
-  //                     border: OutlineInputBorder(),
-  //                   ),
-  //                   maxLines: 3,
-  //                 ),
-  //                 const SizedBox(height: 10),
-  //                 // Price Field
-  //                 TextField(
-  //                   controller: priceController,
-  //                   decoration: const InputDecoration(
-  //                     labelText: 'Price',
-  //                     border: OutlineInputBorder(),
-  //                   ),
-  //                   keyboardType: TextInputType.number, // Numeric input
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop(); // Close dialog without saving
-  //               },
-  //               child: const Text('Cancel'),
-  //             ),
-  //             ElevatedButton(
-  //               onPressed: () {
-  //                 setState(() {
-  //                   // Update service details
-  //                   service['name'] = nameController.text;
-  //                   service['description'] = descriptionController.text;
-  //                   service['price'] = priceController.text;
-  //                 });
-  //                 Navigator.of(context).pop(); // Close dialog after saving
-  //               },
-  //               child: const Text('Save'),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
-
-  // Section Builder for Horizontal List
-  Widget _buildHorizontalSection(
-      String title, List<Service> serviceList) {
+  Widget _buildHorizontalSection(String title, List<Service> serviceList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Row with title and Add Button for 'Our Services' only
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -147,7 +43,7 @@ class _ServicesSectionState extends State<ServicesSection> {
             ),
             if (title == 'Our Services' && widget.isBusiness)
               IconButton(
-                onPressed: (){},
+                onPressed: () {},
                 icon: const Icon(Icons.add_circle),
               ),
           ],
@@ -168,37 +64,9 @@ class _ServicesSectionState extends State<ServicesSection> {
     );
   }
 
-  // Three dot menu for each card
-
-  // Widget _threeDotMenu(BuildContext context, Service service) {
-  //   return PopupMenuButton<String>(
-  //     onSelected: (value) {
-  //       if (value == 'Edit') {
-  //         // Edit the service
-  //         _editService(service);
-  //       } else if (value == 'Delete') {
-  //         setState(() {
-  //           widget.services.remove(service);
-  //         });
-  //       }
-  //     },
-  //     itemBuilder: (context) {
-  //       return [
-  //         const PopupMenuItem<String>(
-  //           value: 'Edit',
-  //           child: Text('Edit'),
-  //         ),
-  //         const PopupMenuItem<String>(
-  //           value: 'Delete',
-  //           child: Text('Delete'),
-  //         ),
-  //       ];
-  //     },
-  //   );
-  // }
-
-  // Service Card Builder
   Widget _buildServiceCard(Service service) {
+    final imageUrl = service.imageUrl?.toString() ?? '';
+
     return Container(
       width: 300,
       margin: const EdgeInsets.only(right: 16),
@@ -207,87 +75,87 @@ class _ServicesSectionState extends State<ServicesSection> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Service Image
-                ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: service.imageUrl.toString().startsWith('http')
-                      ? Image.network(
-                          service.imageUrl.toString(),
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.file(
-                          File(service.imageUrl.toString()),
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    service.name,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    service.description.toString() ?? '',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                  ),
-                ),
-                const Spacer(), // Pushes content above this point upward
-
-                // Row for Price and Book Now Button
-                Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: 8.0), // Ensures consistent spacing
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          service.price.toString(),
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(15)),
+              child: imageUrl.startsWith('http')
+                  ? Image.network(
+                      imageUrl,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 150,
+                        color: Colors.grey,
+                        child: const Icon(Icons.broken_image),
                       ),
-                      const Spacer(), // Pushes button to the far right
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Add booking logic here
-                          },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            backgroundColor: Colors.yellow,
+                    )
+                  : imageUrl.isNotEmpty
+                      ? Image.file(
+                          File(imageUrl),
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 150,
+                            color: Colors.grey,
+                            child: const Icon(Icons.broken_image),
                           ),
-                          child: const Text('Book Now'),
+                        )
+                      : Container(
+                          height: 150,
+                          color: Colors.grey,
+                          child: const Icon(Icons.image_not_supported),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
-
-            // // Positioned Three-dot Menu at the Top-Right Corner
-            // if (widget.isBusiness && !(service['isPopular'] ?? false))
-            //   Positioned(
-            //     top: 8,
-            //     right: 8,
-            //     child: _threeDotMenu(context, service),
-            //   ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                service.name,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                service.description?.toString() ?? '',
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      service.price?.toString() ?? 'Free',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Add booking logic here
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.yellow,
+                      ),
+                      child: const Text('Book Now'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

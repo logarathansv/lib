@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String BASEURL = 'http://192.168.203.41:3000';
+  static const String BASEURL = 'http://192.168.238.41:3000';
   static const String users = '/users';
   static const String login = '/bs/auth/login';
   static const String register = '/users/register';
@@ -54,4 +54,21 @@ class Endpoints {
 
   //CRM
   static const String getPastServices='/bs/past_services';
+  
+  //Service Insights
+  static const String topServicesCount = '/bs/top-services-count';
+  static const String bottomServicesCount = '/bs/bottom-services-count';
+  static const String topServicesRevenue = '/bs/top-services-revenue';
+  static const String topServicesRevenueWeek = '/bs/top-services-revenue-weekly';
+  static const String topServicesRevenueYear = '/bs/top-services-revenue-yearly';
+
+  //Customer Insights
+  static const String newoldCustomersRevenue = '/bs/new-old-revenue';
+  static const String topCustomersRevenue = '/bs/top-customers-revenue';
+  static const String bottomCustomersRevenue = '/bs/bottom-customers-revenue';
+
+  //Dashboard
+  static const String customerCountWeekly = '/bs/weekly_analytics';
+  static const String customerCountMonthly = '/bs/monthly_analytics';
+  static const String retentionRate = '/bs/retention_churn_rate';
 }

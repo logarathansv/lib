@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,6 +9,7 @@ import 'package:sklyit_business/models/profile_model/business_details_model.dart
 import 'package:sklyit_business/providers/business_main.dart';
 import 'package:sklyit_business/providers/profile_provider.dart';
 import 'package:textfield_tags/textfield_tags.dart';
+
 import '../../api/profile/business_profile_api.dart';
 
 class EditBusinessProfilePage extends ConsumerStatefulWidget {
@@ -577,6 +578,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
     TextEditingController districtController = TextEditingController();
     TextEditingController stateController = TextEditingController();
     TextEditingController pincodeController = TextEditingController();
+    TextEditingController doornoController = TextEditingController();
 
     if (index != null) {
       streetController.text = addressControllers[index]["street"]!.text;
@@ -584,6 +586,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
       districtController.text = addressControllers[index]["district"]!.text;
       stateController.text = addressControllers[index]["state"]!.text;
       pincodeController.text = addressControllers[index]["pincode"]!.text;
+      doornoController.text = addressControllers[index]["doorno"]!.text;
     }
 
     showDialog(
@@ -595,6 +598,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                buildTextField("Door No", doornoController),
                 buildTextField("Street", streetController),
                 buildTextField("City", cityController),
                 buildTextField("District", districtController),
@@ -616,6 +620,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
 
                 if(index == null) {
                   final data = {
+                    "door_no": doornoController.text,
                     "street": streetController.text,
                     "city": cityController.text,
                     "district": districtController.text,
@@ -625,6 +630,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
                   addAddresses.insert(0, data);
                   setState(() {
                     addressControllers.add({
+                      "door_no": doornoController,
                       "street": streetController,
                       "city": cityController,
                       "district": districtController,
@@ -636,6 +642,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
                 else{
                   final data = {
                     "oldAddress" : {
+                      "door_no": addressControllers[index]["door_no"]!.text,
                       "street": addressControllers[index]["street"]!.text,
                       "city": addressControllers[index]["city"]!.text,
                       "district": addressControllers[index]["district"]!.text,
@@ -643,6 +650,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
                       "pincode": addressControllers[index]["pincode"]!.text,
                     },
                     "newAddress": {
+                      "door_no": doornoController.text,
                       "street": streetController.text,
                       "city": cityController.text,
                       "district": districtController.text,
@@ -652,6 +660,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
                   };
                   await updateBusiness.updateAddress(data);
                   setState(() {
+                    addressControllers[index]["door_no"]!.text = doornoController.text;
                     addressControllers[index]["street"]!.text = streetController.text;
                     addressControllers[index]["city"]!.text = cityController.text;
                     addressControllers[index]["district"]!.text = districtController.text;
@@ -684,6 +693,7 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
       for(int i = 0; i < delAddresses.length; i++) {
         final data = {
           "address": {
+            "door_no": delAddresses[i]["door_no"]!.text,
             "street": delAddresses[i]["street"]!.text,
             "city": delAddresses[i]["city"]!.text,
             "district": delAddresses[i]["district"]!.text,
@@ -696,7 +706,10 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
     }
 
     if(addAddresses.isNotEmpty){
-      await updateBusiness.addAddress(addAddresses);
+      String msg = await updateBusiness.addAddress(addAddresses[0]);
+      if(msg != "Address added successfully!") {
+        Fluttertoast.showToast(msg: "Failed to add address: $msg", toastLength: Toast.LENGTH_SHORT, gravity: ToastGravity.BOTTOM, timeInSecForIosWeb: 1);
+      }
     }
 
     try {

@@ -14,9 +14,8 @@ class BusinessMainAPI {
         final response = await _dio.get(
             Endpoints.business_details
         );
-        print(response.data);
         if(response.statusCode == 200){
-          return Business.fromJson(response.data);
+          return Business.fromJson(response.data['business']);
         }
         else{
           throw Exception("Failed to load business");

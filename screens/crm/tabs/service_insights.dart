@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sklyit_business/models/crm_model/service_insights/service_crm_models.dart';
+import 'package:sklyit_business/providers/crm/service_insights_provider.dart';
+import 'package:shimmer/shimmer.dart';
 
-class ServiceInsightsPage extends StatefulWidget {
+class ServiceInsightsPage extends ConsumerStatefulWidget {
   const ServiceInsightsPage({super.key});
 
   @override
-  State<ServiceInsightsPage> createState() => _ServiceInsightsPageState();
+  ConsumerState<ServiceInsightsPage> createState() => _ServiceInsightsPageState();
 }
 
-class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
+class _ServiceInsightsPageState extends ConsumerState<ServiceInsightsPage> {
   String _view = 'Weekly';
   // Default view is weekly
   final List<TrendData> _weeklyData = [
@@ -52,8 +56,8 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
         child: Column(
           children: [
             buildTopServices(),
-            buildUsageStats(),
-            buildRevenueStats(),
+            buildAreasToImprove(),
+            buildTopEarningServices(),
             buildServiceTrends(trendData),
           ],
         ),
@@ -62,12 +66,7 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
   }
 
   Widget buildTopServices() {
-    // Sample Data for Top Services
-    final List<ServiceData> data = [
-      ServiceData(serviceName: 'Facial', bookings: 150),
-      ServiceData(serviceName: 'Massage', bookings: 120),
-      ServiceData(serviceName: 'Haircut', bookings: 100),
-    ];
+    final topServicesAsync = ref.watch(getTopServicesByBookings);
 
     return Card(
       margin: const EdgeInsets.all(10),
@@ -79,53 +78,48 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
               'Top 3 Services',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            ...data.map((service) => ListTile(
+            topServicesAsync.when(
+              data: (data) { 
+                if (data.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No Services found.', style: TextStyle(color: Colors.grey)),
+                  );
+                };
+                return Column(
+                children: data.map((service) => ListTile(
                   title: Text(service.serviceName),
                   trailing: Text('${service.bookings} Bookings'),
+                )).toList(),
+              );
+              },
+              loading: () => Column(
+                children: List.generate(3, (index) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: ListTile(
+                      title: Container(height: 16, width: 100, color: Colors.grey[300]),
+                      trailing: Container(height: 16, width: 60, color: Colors.grey[300]),
+                    ),
+                  ),
                 )),
+              ),
+              error: (err, stack) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Failed to load top services', style: TextStyle(color: Colors.red)),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget buildUsageStats() {
-    // Sample Data for Most Used and Least Used Services
-    final List<ServiceData> mostUsed = [
-      ServiceData(serviceName: 'Facial', bookings: 150),
-      ServiceData(serviceName: 'Massage', bookings: 120),
-      ServiceData(serviceName: 'Haircut', bookings: 100),
-    ];
-
-    final List<LeastUsedService> leastUsed = [
-      LeastUsedService(
-          serviceName: 'Nail Art',
-          bookings: 20,
-          areaToImprove: 'Increase marketing and visibility'),
-      LeastUsedService(
-          serviceName: 'Makeup',
-          bookings: 15,
-          areaToImprove: 'Provide promotional discounts'),
-    ];
-
-    // Create BarChartGroupData for Most Used
-    List<BarChartGroupData> barGroups = [];
-    for (var i = 0; i < mostUsed.length; i++) {
-      barGroups.add(
-        BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(
-              toY: mostUsed[i].bookings.toDouble(),
-              color: Colors.blue,
-              width: 15,
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ],
-        ),
-      );
-    }
-
+  Widget buildAreasToImprove() {
+    final bottomServicesAsync = ref.watch(getBottomServicesByBookings);
+  
     return Card(
       margin: const EdgeInsets.all(10),
       child: Padding(
@@ -134,82 +128,54 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Top 3 Most Used Services',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 300,
-              child: BarChart(
-                BarChartData(
-                  barGroups: barGroups,
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40, // Increase space for the left titles
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: const TextStyle(color: Colors.black),
-                          );
-                        },
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 38, // Space for the bottom titles
-                        getTitlesWidget: (value, meta) {
-                          // Make sure to handle index-based service names
-                          return Text(
-                            mostUsed[value.toInt()].serviceName,
-                            style: const TextStyle(color: Colors.black),
-                          );
-                        },
-                      ),
-                    ),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(
-                            showTitles: false)), // Disable top titles
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(
-                            showTitles: false)), // Disable right titles
-                  ),
-                  borderData: FlBorderData(show: false), // No border
-                  gridData: const FlGridData(show: true), // Show grid lines
-                  barTouchData: BarTouchData(
-                      enabled: false), // Disable touch interactions
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
               'Areas to Improve',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            ...leastUsed.map((service) => Padding(
+            bottomServicesAsync.when(
+              data: (leastUsed) { 
+                if (leastUsed.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No Bookings found.', style: TextStyle(color: Colors.grey)),
+                  );
+                };
+                return Column(
+                children: leastUsed.map((service) => Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: ListTile(
                     title: Text(service.serviceName),
-                    subtitle: Text('Bookings: ${service.bookings}'),
-                    trailing: Text(service.areaToImprove),
+                    trailing: Text('Bookings: ${service.bookings}'),
+                  ),
+                )).toList(),
+              );
+              },
+              loading: () => Column(
+                children: List.generate(3, (index) => Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: ListTile(
+                      title: Container(height: 16, width: 100, color: Colors.grey[300]),
+                      trailing: Container(height: 16, width: 60, color: Colors.grey[300]),
+                    ),
                   ),
                 )),
+              ),
+              error: (err, stack) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Failed to load areas to improve', style: TextStyle(color: Colors.red)),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget buildRevenueStats() {
-    // Sample Data for Top Earning Services
-    final List<ServiceRevenueData> revenueData = [
-      ServiceRevenueData(service: 'Facial', revenue: 3000),
-      ServiceRevenueData(service: 'Massage', revenue: 2400),
-      ServiceRevenueData(service: 'Haircut', revenue: 1800),
-    ];
-
+  Widget buildTopEarningServices() {
+    final revenueDataAsync = ref.watch(getTopServicesByRevenue);
+  
     return Card(
       margin: const EdgeInsets.all(10),
       child: Padding(
@@ -218,10 +184,39 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
           children: [
             const Text('Top Earning Services',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ...revenueData.map((data) => ListTile(
+            revenueDataAsync.when(
+              data: (revenueData) { 
+                if (revenueData.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No Data found.', style: TextStyle(color: Colors.grey)),
+                  );
+                };
+                return Column(
+                children: revenueData.map((data) => ListTile(
                   title: Text(data.service),
-                  trailing: Text('\$${data.revenue}'),
+                  trailing: Text('${data.revenue}'),
+                )).toList(),
+              );
+              },
+              loading: () => Column(
+                children: List.generate(3, (index) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: ListTile(
+                      title: Container(height: 16, width: 100, color: Colors.grey[300]),
+                      trailing: Container(height: 16, width: 60, color: Colors.grey[300]),
+                    ),
+                  ),
                 )),
+              ),
+              error: (err, stack) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Failed to load top earning services', style: TextStyle(color: Colors.red)),
+              ),
+            ),
           ],
         ),
       ),
@@ -361,36 +356,4 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
       ),
     );
   }
-}
-
-class ServiceData {
-  final String serviceName;
-  final int bookings;
-
-  ServiceData({required this.serviceName, required this.bookings});
-}
-
-class ServiceRevenueData {
-  final String service;
-  final int revenue;
-
-  ServiceRevenueData({required this.service, required this.revenue});
-}
-
-class TrendData {
-  final String year;
-  final int bookings;
-
-  TrendData({required this.year, required this.bookings});
-}
-
-class LeastUsedService {
-  final String serviceName;
-  final int bookings;
-  final String areaToImprove;
-
-  LeastUsedService(
-      {required this.serviceName,
-      required this.bookings,
-      required this.areaToImprove});
 }

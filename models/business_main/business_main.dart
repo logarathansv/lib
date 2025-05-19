@@ -57,7 +57,7 @@ class Business {
       businessMainTags: List<String>.from(json['BusinessMainTags'] ?? []),
       businessSubTags: List<String>.from(json['BusinessSubTags'] ?? []),
       addresses: json['addresses'],
-      loyaltyPts: json['loyaltypts'],
+      loyaltyPts: json['loyaltypts'] == null ? null : json['loyaltypts'],
       userId: json['userId'],
       createdAt: json['created_at'],
       followers: (json['followers'] as List<dynamic>?)

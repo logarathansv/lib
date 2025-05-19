@@ -15,19 +15,30 @@ class BookingPage extends ConsumerStatefulWidget {
 }
 
 class _BookingPageState extends ConsumerState<BookingPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+    with TickerProviderStateMixin {
+  late TabController _mainTabController;
+  late TabController _oldRequestTabController;
   String _searchQuery = "";
+  int _oldRequestTabIndex = 0; // For old requests filter
+
+  final List<String> oldRequestStatuses = [
+    "Accepted",
+    "Rejected",
+    "Cancelled",
+    "Completed"
+  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _mainTabController = TabController(length: 2, vsync: this);
+    _oldRequestTabController = TabController(length: oldRequestStatuses.length, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _mainTabController.dispose();
+    _oldRequestTabController.dispose();
     super.dispose();
   }
 
@@ -137,7 +148,7 @@ class _BookingPageState extends ConsumerState<BookingPage>
               ),
               const SizedBox(height: 24),
 
-              // Tabs
+              // Main Tabs: New Requests & Old Requests
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -151,7 +162,7 @@ class _BookingPageState extends ConsumerState<BookingPage>
                   ],
                 ),
                 child: TabBar(
-                  controller: _tabController,
+                  controller: _mainTabController,
                   labelPadding: const EdgeInsets.symmetric(horizontal: 16),
                   indicatorSize: TabBarIndicatorSize.label,
                   indicatorColor: const Color(0xfff4c345),
@@ -168,9 +179,7 @@ class _BookingPageState extends ConsumerState<BookingPage>
                   ),
                   tabs: const [
                     Tab(text: "New Requests"),
-                    Tab(text: "Rejected"),
-                    Tab(text: "Cancelled"),
-                    Tab(text: "Accepted"),
+                    Tab(text: "Old Requests"),
                   ],
                 ),
               ),
@@ -180,12 +189,65 @@ class _BookingPageState extends ConsumerState<BookingPage>
               // Tab views
               Expanded(
                 child: TabBarView(
-                  controller: _tabController,
+                  controller: _mainTabController,
                   children: [
-                    BookingList(bookingType: "Pending", searchQuery: _searchQuery),
-                    BookingList(bookingType: "Rejected", searchQuery: _searchQuery),
-                    BookingList(bookingType: "Cancelled", searchQuery: _searchQuery),
-                    BookingList(bookingType: "Accepted", searchQuery: _searchQuery)
+                    // New Requests Tab
+                    BookingList(
+                      bookingType: "Pending",
+                      searchQuery: _searchQuery,
+                      showStatusSymbol: true,
+                    ),
+                    // Old Requests Tab with filter
+                    Column(
+                      children: [
+                        // Old Requests Filter Tabs
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: TabBar(
+                            controller: _oldRequestTabController,
+                            isScrollable: true,
+                            indicatorColor: const Color(0xfff4c345),
+                            labelColor: const Color(0xFF2f4757),
+                            unselectedLabelColor: Colors.grey[600],
+                            labelStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                            unselectedLabelStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            onTap: (index) {
+                              setState(() {
+                                _oldRequestTabIndex = index;
+                              });
+                            },
+                            tabs: oldRequestStatuses
+                                .map((status) => Tab(text: status))
+                                .toList(),
+                          ),
+                        ),
+                        Expanded(
+                          child: BookingList(
+                            bookingType: oldRequestStatuses[_oldRequestTabIndex],
+                            searchQuery: _searchQuery,
+                            showStatusSymbol: true,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -197,11 +259,52 @@ class _BookingPageState extends ConsumerState<BookingPage>
   }
 }
 
+// BookingList now takes showStatusSymbol
 class BookingList extends ConsumerWidget {
   final String bookingType;
   final String searchQuery;
+  final bool showStatusSymbol;
 
-  BookingList({super.key, required this.bookingType, required this.searchQuery});
+  BookingList({
+    super.key,
+    required this.bookingType,
+    required this.searchQuery,
+    this.showStatusSymbol = false,
+  });
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case "Accepted":
+        return Colors.green;
+      case "Rejected":
+        return Colors.red;
+      case "Cancelled":
+        return Colors.orange;
+      case "Completed":
+        return Colors.blue;
+      case "Pending":
+        return Colors.amber;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _statusIcon(String status) {
+    switch (status) {
+      case "Accepted":
+        return Icons.check_circle;
+      case "Rejected":
+        return Icons.cancel;
+      case "Cancelled":
+        return Icons.remove_circle;
+      case "Completed":
+        return Icons.verified;
+      case "Pending":
+        return Icons.hourglass_top;
+      default:
+        return Icons.info;
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -209,13 +312,11 @@ class BookingList extends ConsumerWidget {
 
     return bookingasync.when(
       data: (bookings) {
-        // Filter bookings based on the bookingType and searchQuery
         List<Booking> filteredBookings = bookings.where((booking) {
           bool matchesType = booking.status == bookingType;
           bool matchesSearch = searchQuery.isEmpty ||
               booking.customerName.toLowerCase().contains(searchQuery.toLowerCase()) ||
               booking.service['ServiceName'].toString().toLowerCase().contains(searchQuery.toLowerCase());
-
           return matchesType && matchesSearch;
         }).toList();
 
@@ -227,33 +328,47 @@ class BookingList extends ConsumerWidget {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => (bookingType != 'Accepted') ? BookingDetailsPage(
-                            customerName: booking.customerName,
-                            services: [booking.service['ServiceName'] as String],
-                            date: booking.date,
-                            time: booking.time,
-                            serviceMode: booking.serviceMode,
-                            status: booking.status,
-                            // isNewCustomer: booking.status == "Pending",
-                          ) : BookingDetailsPage(
-                              customerName: booking.customerName,
-                              services: [booking.service['ServiceName'] as String],
-                              date: booking.date,
-                              time: booking.time,
-                              serviceMode: booking.serviceMode,                             
-                              addressCity: booking.addressCity,
-                              addressStreet: booking.addressStreet,
-                              addressDoorno: booking.addressDoorno,
-                              addressPincode: booking.addressPincode,
-                              customerPhone: booking.customerPhone,
-                              status: booking.status
-                            )
-                          )
-                          
-                  )
+                          builder: (context) => (bookingType != 'Accepted')
+                              ? BookingDetailsPage(
+                                  customerName: booking.customerName,
+                                  services: [booking.service['ServiceName'] as String],
+                                  date: booking.date,
+                                  time: booking.time,
+                                  serviceMode: booking.serviceMode,
+                                  status: booking.status,
+                                )
+                              : BookingDetailsPage(
+                                  bookingId: booking.BookingId,
+                                  customerName: booking.customerName,
+                                  customerId: booking.customerId,
+                                  services: [booking.service['ServiceName'] as String],
+                                  date: booking.date,
+                                  time: booking.time,
+                                  serviceMode: booking.serviceMode,
+                                  addressCity: booking.addressCity,
+                                  addressStreet: booking.addressStreet,
+                                  addressDoorno: booking.addressDoorno,
+                                  addressPincode: booking.addressPincode,
+                                  customerPhone: booking.customerPhone,
+                                  status: booking.status,
+                                ))),
                 },
-                child: BookingCard(
-                  booking: booking,
+                child: Stack(
+                  children: [
+                    BookingCard(
+                      booking: booking,
+                    ),
+                    if (showStatusSymbol)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Icon(
+                          _statusIcon(booking.status),
+                          color: _statusColor(booking.status),
+                          size: 28,
+                        ),
+                      ),
+                  ],
                 ),
               ),
           ],

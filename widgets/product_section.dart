@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 
 import '../models/product_model/product_model.dart';
 
@@ -34,29 +32,6 @@ class _ProductsSectionState extends State<ProductsSection> {
     );
   }
 
-  // Add Product Functionality
-  void _addProduct() async {
-    // final picker = ImagePicker();
-    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    //
-    // if (pickedFile != null) {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder: (context) => ProductDetailsScreen(
-    //         imagePath: pickedFile.path,
-    //         onSave: (newProduct) {
-    //           setState(() {
-    //             widget.products.add(newProduct);
-    //           });
-    //         },
-    //       ),
-    //     ),
-    //   );
-    // }
-  }
-
-  // Horizontal Section Builder
   Widget _buildHorizontalSection(
       String title, List<Product> productList) {
     return Column(
@@ -69,11 +44,6 @@ class _ProductsSectionState extends State<ProductsSection> {
               title,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            if (title == 'Our Products' && widget.isBusiness)
-              IconButton(
-                icon: const Icon(Icons.add_circle),
-                onPressed: _addProduct,
-              ),
           ],
         ),
         const SizedBox(height: 10),
@@ -103,7 +73,7 @@ class _ProductsSectionState extends State<ProductsSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProductImage(product.imageUrl!),
+            _buildProductImage(product.imageUrl ?? ''),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
@@ -114,7 +84,7 @@ class _ProductsSectionState extends State<ProductsSection> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(product.description!,
+              child: Text(product.description ?? '',
                   style: TextStyle(fontSize: 14, color: Colors.grey[700])),
             ),
             const Spacer(),
@@ -151,112 +121,6 @@ class _ProductsSectionState extends State<ProductsSection> {
               style: const TextStyle(fontSize: 14)),
         ],
       ),
-    );
-  }
-}
-
-class ProductDetailsScreen extends StatefulWidget {
-  final String imagePath;
-  final Function(Map<String, dynamic>) onSave;
-
-  const ProductDetailsScreen(
-      {super.key, required this.imagePath, required this.onSave});
-
-  @override
-  _ProductDetailsScreenState createState() => _ProductDetailsScreenState();
-}
-
-class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String name = '';
-  String description = '';
-  String price = '';
-  String quantity = '';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xfff4c345),
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          onPressed: () => {Navigator.of(context).pop()},
-          icon: const HugeIcon(
-            icon: HugeIcons.strokeRoundedArrowLeft03,
-            color: Colors.black,
-            size: 24.0,
-          ),
-        ),
-        title: const Text(
-          'Product Details',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2f4757),
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Image.file(File(widget.imagePath),
-                  height: 200, fit: BoxFit.cover),
-              const SizedBox(height: 20),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildTextField('Product Name', (value) => name = value),
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                        'Description', (value) => description = value,
-                        maxLines: 3),
-                    const SizedBox(height: 10),
-                    _buildTextField('Price', (value) => price = value,
-                        inputType: TextInputType.number),
-                    const SizedBox(height: 10),
-                    _buildTextField('Quantity', (value) => quantity = value,
-                        inputType: TextInputType.number),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                          widget.onSave({
-                            'imageUrl': widget.imagePath,
-                            'name': name,
-                            'description': description,
-                            'price': price,
-                            'quantity': int.tryParse(quantity) ?? 1,
-                            'isPopular': false,
-                          });
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text('Save Product'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(String label, Function(String) onSave,
-      {int maxLines = 1, TextInputType inputType = TextInputType.text}) {
-    return TextFormField(
-      decoration:
-          InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      maxLines: maxLines,
-      keyboardType: inputType,
-      validator: (value) =>
-          value == null || value.isEmpty ? '$label is required' : null,
-      onSaved: (value) => onSave(value!),
     );
   }
 }

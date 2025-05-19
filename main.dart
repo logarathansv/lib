@@ -21,7 +21,7 @@ import 'screens/chat/chat_screen.dart';
 import 'screens/tools/tools_screen.dart';
 import 'screens/settings/settings_page.dart';
 import 'widgets/notifications/notifications.dart';
-import 'screens/preloaderscreen.dart';
+import 'widgets/preloader.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -57,7 +57,7 @@ Future<bool> _checkNotificationPermission() async {
   return true; // Assume granted for other platforms
 }
 
-class SklyitApp extends StatefulWidget  {
+class SklyitApp extends StatefulWidget {
   const SklyitApp({super.key});
 
   @override
@@ -65,22 +65,13 @@ class SklyitApp extends StatefulWidget  {
 }
 
 class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
-  bool logged = false;
-
-  bool isValidRefresh = false;
-
-  bool _isDialogOpen = false;
-
-  String? rtoken = '';
-
-  bool isValid = false;
+  late Future<bool> _initializationFuture;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 5));
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => initialization(),);
+    _initializationFuture = initialization();
     _checkInternetOnStart();
     _listenForInternetChanges();
   }
@@ -97,24 +88,13 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
       if (results.isNotEmpty && results.first == ConnectivityResult.none && !_isDialogOpen) {
         _showNoInternetDialog();
       } else if (results.isNotEmpty && results.first != ConnectivityResult.none && _isDialogOpen) {
-        Navigator.pop(context); // Close the dialog if internet is restored
+        Navigator.pop(context);
         _isDialogOpen = false;
       }
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isDialogOpen) {
-      _showNoInternetDialog(); // Re-show the dialog if the app is resumed
-    }
-  }
+  bool _isDialogOpen = false;
 
   void _showNoInternetDialog() {
     setState(() {
@@ -123,40 +103,24 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
 
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent users from dismissing dialog by tapping outside
+      barrierDismissible: false,
       builder: (context) => WillPopScope(
-        // Prevent dialog from closing on back button press
-        onWillPop: () async => false, // Always return false to block back button
+        onWillPop: () async => false,
         child: AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: Column(
             children: [
               Icon(Icons.wifi_off, color: Colors.red, size: 50),
               SizedBox(height: 10),
-              Text(
-                "No Internet Connection",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
+              Text("No Internet Connection", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             ],
           ),
-          content: Text(
-            "Please check your internet connection and try again.",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
-          ),
+          content: Text("Please check your internet connection and try again.", textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
           actions: [
-            // Exit Button
             TextButton(
-              onPressed: () => exit(0), // Close the app
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              ),
-              child: Text(
-                "Exit",
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
+              onPressed: () => exit(0),
+              style: TextButton.styleFrom(backgroundColor: Colors.redAccent, padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20)),
+              child: Text("Exit", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
           ],
         ),
@@ -164,19 +128,19 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> initialization() async {
-    await verifyLogin();
-    (logged) ? {uid = (await storage.read(key: 'userId'))!, SocketService().initialize(uid)} : null;
-  }
-
-  Future<void> verifyLogin() async {
+  Future<bool> initialization() async {
     final prefs = await SharedPreferences.getInstance();
-    rtoken = await storage.read(key: 'rtoken');
-    isValidRefresh =  (rtoken != null) ? await CheckRefreshValid().isRefreshValid() : false;
-    setState(() {
-      logged = prefs.getBool("is_logged") ?? false;
-      isValid = isValidRefresh;
-    });
+    final rtoken = await storage.read(key: 'rtoken');
+    final isValidRefresh = (rtoken != null) ? await CheckRefreshValid().isRefreshValid() : false;
+    final logged = prefs.getBool("is_logged") ?? false;
+
+    if (logged && isValidRefresh) {
+      uid = (await storage.read(key: 'userId'))!;
+      SocketService().initialize(uid);
+      return true;
+    }
+
+    return false;
   }
 
   @override
@@ -187,22 +151,36 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
         primaryColor: Colors.amberAccent,
         scaffoldBackgroundColor: Colors.grey.shade100,
         textTheme: TextTheme(
-          bodyLarge: TextStyle(
-            fontSize: 18.0,
-            color: Colors.grey[800],
-            fontWeight: FontWeight.w500,
-          ),
-          displayLarge: const TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          bodyLarge: TextStyle(fontSize: 18.0, color: Colors.grey[800], fontWeight: FontWeight.w500),
+          displayLarge: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
       ),
-      home: (isValid && logged) ? PersonalCareBusinessPage() : LoginPage()
+      home: FutureBuilder<bool>(
+        future: _initializationFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return SplashScreen(); // Replace with your splash/loading screen
+          }
+          return snapshot.data == true ? PersonalCareBusinessPage() : LoginPage();
+        },
+      ),
     );
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isDialogOpen) {
+      _showNoInternetDialog();
+    }
+  }
 }
+
 
 class PersonalCareBusinessPage extends ConsumerStatefulWidget {
   const PersonalCareBusinessPage({super.key});

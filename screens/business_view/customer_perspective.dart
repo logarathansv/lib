@@ -1,18 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sklyit_business/main.dart';
-import 'package:sklyit_business/models/product_model/product_model.dart';
-import '../../models/business_main/business_main.dart';
 import '../../providers/business_main.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/service_provider.dart';
 import '../section/services_section.dart';
-import 'business_perspective.dart';
 import '../../widgets/business_page_cards/search_bar.dart' as search_bar;
 import '../../widgets/business_page_cards/shop_info_card.dart';
 import '../../widgets/product_section.dart';
-import 'premium_template.dart';
 
 class CustomerPerspective extends StatelessWidget {
   @override
@@ -24,29 +18,29 @@ class CustomerPerspective extends StatelessWidget {
         elevation: 0,
       ),
       extendBodyBehindAppBar: true, // AppBar floats over the banner
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start, // Left alignment
           children: [
             BusinessBanner(), // Widget for Business Banner
-            const SizedBox(height: 270), // Spacing for the overlapping card
+            SizedBox(height: 270), // Spacing for the overlapping card
             search_bar.SearchBar(),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Services',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   ServicesLoader(), // Widget for Services
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   ProductsLoader(), // Widget for Products
                 ],
               ),
@@ -54,68 +48,50 @@ class CustomerPerspective extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Navigate to the premium version of the customer perspective
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PremiumTemplate(
-                shopName: "Shop Name", // Placeholder, will be replaced in BusinessBanner
-                shopDescription: "Shop Description", // Placeholder
-                bannerImagePath: "", // Placeholder
-                followers: "0", // Placeholder
-                likesCount: "350",
-                rating: "90%",
-              ),
-            ),
-          );
-        },
-        label: Text('Try Premium'),
-        icon: Icon(Icons.star_border),
-      ),
     );
   }
 }
 
-// ==================== Business Banner Widget ====================
 class BusinessBanner extends ConsumerWidget {
+  const BusinessBanner({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final businessAsync = ref.watch(getBusinessProvider); // ✅ Correct way
+    final businessAsync = ref.watch(getBusinessProvider);
 
     return businessAsync.when(
       data: (business) {
+        final imageUrl = business.shopImage?.isNotEmpty == true
+            ? business.shopImage!
+            : 'https://via.placeholder.com/400';
+
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            // Banner Image with Gradient Overlay
+            SizedBox(
+              height: 400,
+              width: double.infinity,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.network(
+                    'https://via.placeholder.com/400',
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            ),
             Container(
               height: 400,
-              width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(business.shopImage ?? ''),
-                  fit: BoxFit.cover,
-                  onError: (error, stackTrace) => const NetworkImage(
-                    'https://via.placeholder.com/150',
-                  ),
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.5),
-                      Colors.transparent,
-                    ],
-                  ),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withOpacity(0.5), Colors.transparent],
                 ),
               ),
             ),
-            // Business Name and Description
             Positioned(
               top: 50,
               left: 16,
@@ -124,95 +100,84 @@ class BusinessBanner extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    business.shopName ?? '',
-                    style: TextStyle(
+                    business.shopName ?? 'Shop Name',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 6.0,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ],
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     business.shopDesc ?? '',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 6.0,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ],
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ],
               ),
             ),
-            // Info Card Overlapping at the Bottom
             Positioned(
               bottom: -260,
               left: 16,
               right: 16,
               child: ShopInfoCard(
-                followers: business.followers.length.toString() ?? '0',
-                popularity: "90%",
-                likesCount: "350",
-                shopAddress: business.shopLocations.toString() ?? '',
+                followers: business.followers?.length.toString() ?? '0',
+                popularity: "90%", // Use dynamic if available
+                likesCount: "350", // Same here
+                shopAddress: (business.addresses?.first.address?? '').toString(),
               ),
             ),
           ],
         );
       },
-      loading: () => Center(child: CircularProgressIndicator()), // ✅ Show loader while fetching
-      error: (error, stackTrace) => Center(child: Text('Failed to load business info: $error')), // ✅ Show error message
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) =>
+          Center(child: Text('Failed to load business info: $error')),
     );
   }
 }
 
-
-// ==================== Services Loader Widget ====================
 class ServicesLoader extends ConsumerWidget {
+  const ServicesLoader({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final servicesAsync = ref.watch(getServicesProvider); // ✅ Correct way
+    final servicesAsync = ref.watch(getServicesProvider);
 
     return servicesAsync.when(
       data: (services) {
         if (services.isEmpty) {
-          return Center(child: Text('No services available'));
+          return const Center(child: Text('No services available'));
         }
         return ServicesSection(services: services, isBusiness: true);
       },
-      loading: () => Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('Failed to load services: $error')),
+      loading: () => const Center(
+          child: CircularProgressIndicator(
+        color: Colors.amber,
+      )),
+      error: (error, stackTrace) =>
+          Center(child: Text('Failed to load services: $error')),
     );
   }
 }
 
-
-// ==================== Products Loader Widget ====================
 class ProductsLoader extends ConsumerWidget {
+  const ProductsLoader({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsync = ref.watch(getProductsProvider); // ✅ Correct way to handle async data
+    final productsAsync = ref.watch(getProductsProvider);
 
     return productsAsync.when(
       data: (products) {
         if (products.isEmpty) {
-          return Center(child: Text('No products available'));
+          return const Center(child: Text('No products available'));
         }
         return ProductsSection(products: products, isBusiness: true);
       },
-      loading: () => Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('Failed to load products: $error')),
+      loading: () =>
+          const Center(child: CircularProgressIndicator(color: Colors.amber)),
+      error: (error, stackTrace) =>
+          Center(child: Text('Failed to load products: $error')),
     );
   }
 }
