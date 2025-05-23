@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:sklyit_business/screens/crm/tabs/custom_analytics.dart';
 import 'package:sklyit_business/screens/crm/tabs/customer_analytics.dart';
 import 'package:sklyit_business/screens/crm/tabs/dashboard.dart';
 import 'package:sklyit_business/screens/crm/tabs/performance.dart';
@@ -110,7 +111,7 @@ class _MyHomePageState extends State<CRMPage> with TickerProviderStateMixin {
                 ServiceInsightsPage(),
                 CustomerAnalyticsPage(),
                 RevenueInsightsPage(),
-                PerformanceComparison(),
+                CustomCRM(),
               ],
             ),
           ),

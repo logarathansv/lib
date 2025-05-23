@@ -388,17 +388,18 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
                   children: [
                     Text("Addresses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     Spacer(),
-                    ElevatedButton.icon(
-                      onPressed: () async => await _addAddress(),
-                      icon: Icon(Icons.add, size: 18, color: Colors.teal,),
-                      label: Text("Add Address"),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.teal,
-                        backgroundColor: Colors.grey.shade50,
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    if (addressControllers.isEmpty)
+                      ElevatedButton.icon(
+                        onPressed: () async => await _addAddress(),
+                        icon: Icon(Icons.add, size: 18, color: Colors.teal,),
+                        label: Text("Add Address"),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.teal,
+                          backgroundColor: Colors.grey.shade50,
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 SizedBox(height: 8),
@@ -450,8 +451,8 @@ class _EditBusinessProfilePageState extends ConsumerState<EditBusinessProfilePag
                               ),
                               SizedBox(width: 4,),
                               ElevatedButton.icon(
-                                onPressed: () async => await _editAddress(index),
-                                icon: Icon(Icons.edit, size: 20, color: Colors.red,),
+                                onPressed: () => _deleteAddress(index),
+                                icon: Icon(Icons.delete, size: 20, color: Colors.red,),
                                 label: Text("Delete"),
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.red,

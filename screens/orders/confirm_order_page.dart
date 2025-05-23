@@ -15,11 +15,11 @@ class ConfirmOrderPage extends ConsumerStatefulWidget {
   final List<Product> selectedProducts;
   final DateTime selectedDate;
   final List<Customer> existingCustomers;
-  final Map<Service,int> serviceQuantities;
-  final Map<Product,int> productQuantities;
+  final Map<Service, int> serviceQuantities;
+  final Map<Product, int> productQuantities;
   final bool isQuickOrder;
   final Customer quickOrderCustomer = Customer(
-    custId: '123f0c95-b3e0-e34b-e6d3-52d4bb70a4c8',
+    custId: '15dda9af-6527-02ba-ec06-f5e85dff7156',
     name: 'Quick Order',
     email: 'quick@order.com',
     phoneNumber: '0000000000',
@@ -54,7 +54,8 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
     _isQuickOrder = widget.isQuickOrder;
     if (widget.isQuickOrder && widget.quickOrderCustomer != null) {
       _selectedCustomer = widget.quickOrderCustomer;
-      _customerNameController.text = widget.quickOrderCustomer!.custId.toString();
+      _customerNameController.text =
+          widget.quickOrderCustomer!.custId.toString();
     }
   }
 
@@ -109,7 +110,8 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                           _customerNameController.clear();
                         } else if (widget.quickOrderCustomer != null) {
                           _selectedCustomer = widget.quickOrderCustomer;
-                          _customerNameController.text = widget.quickOrderCustomer!.custId.toString();
+                          _customerNameController.text =
+                              widget.quickOrderCustomer!.custId.toString();
                         }
                       });
                     },
@@ -142,7 +144,8 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                     if (selected != null) {
                       setState(() {
                         _selectedCustomer = selected;
-                        _customerNameController.text = selected.custId.toString();
+                        _customerNameController.text =
+                            selected.custId.toString();
                       });
                     }
                   },
@@ -170,7 +173,8 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     _selectedCustomer!.name,
@@ -266,14 +270,14 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
 
               // Products Section
               if (widget.selectedProducts.isNotEmpty)
-              const Text(
-                'Selected Products',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2f4757),
+                const Text(
+                  'Selected Products',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2f4757),
+                  ),
                 ),
-              ),
               const SizedBox(height: 12),
               ...widget.selectedProducts.map((product) {
                 return Card(
@@ -346,12 +350,16 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
                 final serviceTotal = widget.selectedServices.fold<double>(
                   0.0,
                   (sum, service) =>
-                      sum + (double.parse(service.price) * widget.serviceQuantities[service]!),
+                      sum +
+                      (double.parse(service.price) *
+                          widget.serviceQuantities[service]!),
                 );
                 final productTotal = widget.selectedProducts.fold<double>(
                   0.0,
                   (sum, product) =>
-                      sum + (double.parse(product.price) * widget.productQuantities[product]!),
+                      sum +
+                      (double.parse(product.price) *
+                          widget.productQuantities[product]!),
                 );
                 final subtotal = serviceTotal + productTotal;
                 final tax = subtotal * 0.18;
@@ -395,24 +403,22 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
 
   Future<void> _sendOrder(CreateOrder order) async {
     try {
-      ref.watch(orderServiceProvider).when(
-        data: (orderService) async {
-          await orderService.addOrder(order);
-        },
-        error: (error, stackTrace) {
-          print('Error sending order: $error');
-        },
-        loading: () {
-          print('Sending order...');
-        },
-      );
+      final orderService = ref.read(orderServiceProvider).value;
+
+      if (orderService == null) {
+        print('OrderService not available');
+        return;
+      }
+
+      await orderService.addOrder(order);
       ref.invalidate(getOrdersProvider);
+      print('Order Invalidated successfully');
     } catch (e) {
       print('Error sending order: $e');
     }
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_selectedCustomer == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a customer')),
@@ -423,16 +429,27 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
     if (_formKey.currentState!.validate()) {
       // Create a new order
       final newOrder = CreateOrder(
-        services: widget.selectedServices.map((e) => {'sname':e.name,'cost': e.price,'quantity': widget.serviceQuantities[e]}).toList(),
+        services: widget.selectedServices
+            .map((e) => {
+                  'sname': e.name,
+                  'cost': e.price,
+                  'quantity': widget.serviceQuantities[e]
+                })
+            .toList(),
         products: widget.selectedProducts
-            .map((e) => {'pname': e.name, 'quantity': widget.productQuantities[e],'cost': e.price,'units': e.units})
+            .map((e) => {
+                  'pname': e.name,
+                  'quantity': widget.productQuantities[e],
+                  'cost': e.price,
+                  'units': e.units
+                })
             .toList(),
         customerId: _customerNameController.text,
         orderDate: widget.selectedDate,
       );
       try {
         // Send the order to the server
-        _sendOrder(newOrder);
+        await _sendOrder(newOrder);
       } catch (e) {
         print('Error sending order: $e');
       }
@@ -443,6 +460,7 @@ class _ConfirmOrderPageState extends ConsumerState<ConfirmOrderPage> {
     }
   }
 }
+
 Widget _buildAmountRow(String label, double amount, {bool isTotal = false}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -542,8 +560,12 @@ class _CustomerSelectionPageState extends State<CustomerSelectionPage> {
                 setState(() {
                   _filteredCustomers = widget.existingCustomers
                       .where((customer) =>
-                          customer.name.toLowerCase().contains(value.toLowerCase()) ||
-                          customer.email.toLowerCase().contains(value.toLowerCase()) ||
+                          customer.name
+                              .toLowerCase()
+                              .contains(value.toLowerCase()) ||
+                          customer.email
+                              .toLowerCase()
+                              .contains(value.toLowerCase()) ||
                           customer.phoneNumber.contains(value))
                       .toList();
                 });
