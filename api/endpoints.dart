@@ -14,6 +14,12 @@ class Endpoints {
   static const String update_address = '/address';
   static const String delete_address = '/address/delete';
 
+  //Posts
+  static const String getPosts = '/bs/post';
+  static const String createPosts = '/bs/posts';
+  static const String delPost = '/bs/posts/';
+  static const String editPost = '/bs/posts/';
+
   static const String check_domain = '/bs/domain';
 
   static const String refresh_token = '/bs/auth/refresh';

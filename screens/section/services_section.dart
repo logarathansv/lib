@@ -40,12 +40,7 @@ class _ServicesSectionState extends State<ServicesSection> {
             Text(
               title,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            if (title == 'Our Services' && widget.isBusiness)
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.add_circle),
-              ),
+            ),             
           ],
         ),
         const SizedBox(height: 10),

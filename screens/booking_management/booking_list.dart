@@ -54,46 +54,21 @@ class _BookingPageState extends ConsumerState<BookingPage>
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: const Color(0xfff4c345),
-        elevation: 0,
         automaticallyImplyLeading: false,
-        leading: Container(
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const HugeIcon(
-              icon: HugeIcons.strokeRoundedArrowLeft03,
-              color: Colors.black87,
-              size: 24.0,
-            ),
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft03,
+            color: Colors.black,
+            size: 24.0,
           ),
         ),
         title: const Text(
           'Bookings',
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
             color: Color(0xFF2f4757),
-            letterSpacing: 0.5,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4.0),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withOpacity(0.1),
-                  Colors.transparent,
-                ],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-              ),
-            ),
-            height: 4.0,
           ),
         ),
       ),

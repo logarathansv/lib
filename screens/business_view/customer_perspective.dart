@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sklyit_business/widgets/business_page_cards/posts_section.dart';
+
 import '../../providers/business_main.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/service_provider.dart';
-import '../section/services_section.dart';
-import '../../widgets/business_page_cards/search_bar.dart' as search_bar;
 import '../../widgets/business_page_cards/shop_info_card.dart';
 import '../../widgets/product_section.dart';
+import '../section/services_section.dart';
 
 class CustomerPerspective extends StatelessWidget {
   @override
@@ -24,8 +25,6 @@ class CustomerPerspective extends StatelessWidget {
           children: [
             BusinessBanner(), // Widget for Business Banner
             SizedBox(height: 270), // Spacing for the overlapping card
-            search_bar.SearchBar(),
-            SizedBox(height: 20),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -42,6 +41,9 @@ class CustomerPerspective extends StatelessWidget {
                   ServicesLoader(), // Widget for Services
                   SizedBox(height: 20),
                   ProductsLoader(), // Widget for Products
+                  SizedBox(height: 20),
+                  PostsLoader(),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
@@ -178,6 +180,28 @@ class ProductsLoader extends ConsumerWidget {
           const Center(child: CircularProgressIndicator(color: Colors.amber)),
       error: (error, stackTrace) =>
           Center(child: Text('Failed to load products: $error')),
+    );
+  }
+}
+
+class PostsLoader extends ConsumerWidget {
+  const PostsLoader({super.key});
+  
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postsAsync = ref.watch(postServiceProvider);
+    return postsAsync.when(
+      data: (posts) {
+        if (posts.isEmpty) {
+          return const Center(child: Text('No posts available'));
+        }
+        return PostsSection(posts: posts, isCustomerView: true);
+      },
+      loading: () =>
+          const Center(child: CircularProgressIndicator(color: Colors.amber)),
+      error: (error, stackTrace) =>
+          Center(child: Text('Failed to load posts: $error')),
+          
     );
   }
 }
