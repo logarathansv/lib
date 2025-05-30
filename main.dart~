@@ -166,7 +166,7 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
 
   Future<void> initialization() async {
     await verifyLogin();
-    (logged) ? {uid = (await storage.read(key: 'userId'))!, SocketService().initialize(uid)} : null;
+    (logged) ? {uid = (await storage.read(key: 'userId'))!, SocketService().initialize(uid),} : null;
   }
 
   Future<void> verifyLogin() async {

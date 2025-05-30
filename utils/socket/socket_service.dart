@@ -6,12 +6,13 @@ class SocketService {
   SocketService._privateConstructor();
 
   static final SocketService _instance = SocketService._privateConstructor();
-
+  
   factory SocketService() => _instance;
+  
 
   void initialize(String userId) {
     _socket = IO.io(
-      'http://192.168.203.41:3001',
+      'http://192.168.43.185:3001',
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .enableAutoConnect()
@@ -22,6 +23,8 @@ class SocketService {
     _socket.onConnect((_) {
       print('Connected to WebSocket');
     });
+
+    
 
     _socket.onDisconnect((_) {
       print('Disconnected from WebSocket');

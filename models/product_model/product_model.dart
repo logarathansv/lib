@@ -7,12 +7,16 @@ class Product {
   final String price;
   final String quantity;
   final bool isVerified;
+  final String? bpid;
+  final String? busid;
 
   Product({
     required this.id,
     required this.name,
     this.description,
     this.imageUrl,
+    this.bpid,
+    this.busid,
     required this.units,
     required this.price,
     required this.quantity,
@@ -22,7 +26,9 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
+      bpid: json['bpid'], // Assuming 'product' is the key for the product ma,
       id: json['product']['pid'],
+      busid: json['businessClient']['BusinessId'],
       name: json['product']['pname'],
       description: json['product']['description'],
       imageUrl: json['product']['image_url'],

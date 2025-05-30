@@ -1,5 +1,13 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sklyit_business/models/product_model/product_model.dart';
+import 'package:sklyit_business/providers/product_provider.dart';
+import 'package:sklyit_business/utils/socket/order_socket_service.dart';
+import 'package:sklyit_business/widgets/notifications/wait_for_customer.dart';
+
+import '../../models/notification_model.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -36,10 +44,6 @@ class _NotificationsPageState extends State<NotificationsPage>
     super.dispose();
   }
 
-  void _showPopupPage(BuildContext context) {
-  showFilterPopup(context);
-}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,10 +60,6 @@ class _NotificationsPageState extends State<NotificationsPage>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                actions: [
-                  IconButton(onPressed: ()=> _showPopupPage(context),
-                   icon: const Icon(Icons.tune))
-                ],
               ),
               const Divider(
                 thickness: 3,
@@ -177,47 +177,65 @@ class _NotificationsPageState extends State<NotificationsPage>
   }
 }
 
+class PopupPage extends ConsumerStatefulWidget {
+  final String
+      message; // Add this line to receive the message from the previous page
+  final dynamic data;
+  final Function(Map<String, dynamic>) onAccept;
 
-// 1. First, create a Product model class (can be in same file or separate)
-
-class Product {
-  final String name;
-  final int quantity;
-  final double price;
-  bool checked;
-
-  Product({
-    required this.name,
-    this.quantity = 1,
-    required this.price,
-    this.checked = false,
-  });
-}
-
-class PopupPage extends StatefulWidget {
-  PopupPage({super.key});
+  const PopupPage(
+      {super.key,
+      required this.message,
+      required this.data,
+      required this.onAccept});
 
   @override
-  State<PopupPage> createState() => _PopupPageState();
+  ConsumerState<PopupPage> createState() => _PopupPageState();
 }
 
-class _PopupPageState extends State<PopupPage> {
-  final List<Product> _products = [
-    Product(name: 'Product 1',quantity: 1, price: 100.0),
-    Product(name: 'Product 2', quantity: 1, price: 200.0),
-    Product(name: 'Product 3', quantity: 3, price: 150.0),
-    Product(name: 'Product 4', quantity: 4, price: 400.0),
-  ];
-
+class _PopupPageState extends ConsumerState<PopupPage> {
+  List<Product> availableProducts = [];
+  List<FlashProductList> products = [];
   bool _showAll = false;
-  
   int _secondsRemaining = 60;
   late Timer _timer;
+  String busid = '';
+  final OrderSocketService socket = OrderSocketService();
 
   @override
   void initState() {
     super.initState();
     _startTimer();
+  }
+
+  void _populateProducts(List<Product> fetchedProducts) {
+    availableProducts = fetchedProducts;
+    busid = fetchedProducts[0].busid!;
+    print(availableProducts[0]);
+    print(widget.data['products']);
+
+    for (dynamic item in widget.data['products'].toList()) {
+      print(item);
+      final match = availableProducts.firstWhere((p) => p.id == item['pid']);
+
+      // Parse quantity safely
+      final quantity = (item['quantity'] is String)
+          ? int.tryParse(item['quantity']) ?? 1
+          : item['quantity'] ?? 1;
+
+      final price = double.tryParse(match.price.toString()) ?? 0.0;
+      final total = price * quantity;
+      products.add(FlashProductList(
+        name: match.name,
+        units: match.units,
+        bpid: match.bpid!,
+        price: price.toString(),
+        quantity: quantity,
+        checked: false,
+      ));
+
+      print(products);
+    }
   }
 
   @override
@@ -227,250 +245,337 @@ class _PopupPageState extends State<PopupPage> {
   }
 
   void _startTimer() {
-  const oneSec = Duration(seconds: 1);
-  _timer = Timer.periodic(oneSec, (Timer timer) {
-    if (_secondsRemaining == 0) {
-      timer.cancel();
-      Navigator.of(context).pop(); // Close the popup when timer reaches 0
-    } else {
-      setState(() {
-        _secondsRemaining--;
-      });
-    }
-  });
-}
-  
-    // Function to calculate total payment based on selected products
-double get _totalPayment{
-  return _products.fold(0,(sum, product) => sum + (product.checked ? product.price * product.quantity : 0));
-}
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(oneSec, (Timer timer) {
+      if (_secondsRemaining == 0) {
+        timer.cancel();
+        Navigator.of(context).pop(); // Close the popup when timer reaches 0
+      } else {
+        setState(() {
+          _secondsRemaining--;
+        });
+      }
+    });
+  }
 
-@override
-Widget build(BuildContext context) {
-  List<Product> visibleProducts = _showAll ? _products : _products.take(3).toList();
-  return Scaffold(
-    backgroundColor: Colors.transparent,
-    appBar: null,
-    body: Column(
-      children: [
-        // Half-circle timer below message area
-        Stack(
-          alignment: Alignment.topCenter,
-          clipBehavior: Clip.none,
-          children: [
-             Positioned(
-              top: -30,
+  double get _totalPayment {
+    return products.fold(
+      0.0,
+      (sum, product) {
+        final price = double.tryParse(product.price) ?? 0.0;
+        final quantity = int.tryParse(product.quantity.toString()) ?? 1;
+        return sum + (product.checked ? price * quantity : 0.0);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final getProductsAsync = ref.watch(getProductsProvider);
+    return getProductsAsync.when(
+      data: (fetchedProducts) {
+        if (availableProducts.isEmpty) {
+          _populateProducts(fetchedProducts);
+        }
+        return Material(
+            color: Colors.transparent,
+            child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.shopping_bag, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    'Order',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                constraints: const BoxConstraints(maxWidth: 520),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
-                ],
-              ),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 30),
-              width: 100,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.orange,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(60),
-                  topRight: Radius.circular(60),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  )
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  '$_secondsRemaining',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        
-        // Order section with icon and total
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              color: Colors.orange,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              width: double.infinity,
-            ),
-            Container(
-              color: Colors.orange,
-              padding: const EdgeInsets.only(bottom: 12),
-              width: double.infinity,
-              child: Text(
-                'Total Payment : ₹${_totalPayment.toStringAsFixed(2)}', // Replace this with your dynamic value
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        Container(
-          color: Colors.grey.shade200,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          child:Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text("Product Name", style : TextStyle(fontWeight: FontWeight.bold)),
-              Text("Quantity", style : TextStyle(fontWeight: FontWeight.bold)),
-              Text("Price", style : TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-        
-        // Product list
-        Expanded(
-            child: Container(
-              color: Colors.white,
-              child: ListView.builder(
-                itemCount: visibleProducts.length + (_showAll || _products.length <= 3 ? 0 : 1),
-                itemBuilder: (context, index) {
-                  if (index < visibleProducts.length) {
-                    final product = visibleProducts[index];
-                    return CheckboxListTile(
-                      value: product.checked,
-                      onChanged: (val) {
-                        setState(() {
-                          product.checked = val ?? false;
-                        });
-                      },
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Row(
+                child: Padding(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Bag image above timer
+                      Image.asset(
+                        'assets/images/bag.png',
+                        height: 140,
+                        width: 140,
+                        fit: BoxFit.contain,
+                      ),
+                      // Half-circle timer below message area
+                      Stack(
+                        alignment: Alignment.topCenter,
+                        clipBehavior: Clip.none,
                         children: [
-                          Expanded(
-                            flex: 4,
-                            child: Text(product.name),
+                          Positioned(
+                            top: -10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.shopping_bag, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Incoming Order',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          Expanded(
-                            flex: 2,
-                            child: Center(child: Text('${product.quantity}')),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Text('₹${product.price.toStringAsFixed(2)}'),
+                          Container(
+                            margin: const EdgeInsets.only(top: 30),
+                            width: 100,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.orange,
+                                  Colors.deepOrangeAccent
+                                ],
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(60),
+                                topRight: Radius.circular(60),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                )
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$_secondsRemaining',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  } else {
-                    return Center(
-                      child: TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _showAll = true;
-                          });
-                        },
-                        child: const Text("View More"),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ),
-        
-        // Modified Accept Order button
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                bool atLeastOneSelected = _products.any((product) => product.checked);
-                if (atLeastOneSelected) {
-                  // Show message at top
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Order Accepted!'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                  
-                  // Close popup after delay
-                  Future.delayed(const Duration(seconds: 1), () {
-                    if (mounted) {
-                      Navigator.of(context).pop();
-                    }
-                  });
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select at least one product'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              child: const Text(
-                'Accept Order',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-}
 
-// Function to show the modal popup
-void showFilterPopup(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (BuildContext context) {
-      return Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        child: PopupPage(),
-      );
-    },
-  );
+                      // Order section with icon and total
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            color: Colors.orange,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            width: double.infinity,
+                          ),
+                          Container(
+                            color: Colors.orange,
+                            padding: const EdgeInsets.only(bottom: 12),
+                            width: double.infinity,
+                            child: Text(
+                              'Total Payment : ₹${_totalPayment.toStringAsFixed(2)}', // Replace this with your dynamic value
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Container(
+                        color: Colors.grey.shade200,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 16),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Product Name",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text("Quantity",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text("Price",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+
+                      // Product list
+                      Expanded(
+                        child: Container(
+                          color: Colors.white,
+                          child: ListView.builder(
+                            itemCount: products.length +
+                                (_showAll || products.length <= 3 ? 0 : 1),
+                            itemBuilder: (context, index) {
+                              if (index < products.length) {
+                                final product = products[index];
+                                return CheckboxListTile(
+                                  value: product.checked,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      product.checked = val ?? false;
+                                    });
+                                  },
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                  title: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 4,
+                                        child: Text(product.name),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Center(
+                                            child: Text('${product.quantity}')),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Text('₹${product.price}'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Center(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _showAll = true;
+                                      });
+                                    },
+                                    child: const Text("View More"),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+
+                      // Modified Accept Order and Decline buttons
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  side: const BorderSide(color: Colors.red),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Order Declined'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Decline',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  bool allSelected = products
+                                      .every((product) => product.checked);
+                                  if (allSelected) {
+                                    final List<Map<String, dynamic>>
+                                        selectedProducts = products
+                                            .where((product) => product.checked)
+                                            .map((product) => {
+                                                  'bpid': product.bpid,
+                                                  'quantity': product.quantity,
+                                                  'price': product.price,
+                                                })
+                                            .toList();
+                                    final payload = {
+                                      'orderId': widget.data['orderId'],
+                                      'domain': widget.data['domain'],
+                                      'username': widget.data['username'],
+                                      'businessId': busid,
+                                      'products': selectedProducts,
+                                    };
+                                    widget.onAccept(payload);
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            WaitingForCustomerScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Please select all products'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'Accept Order',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ));
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Text('Error: $error'),
+    );
+  }
 }

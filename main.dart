@@ -14,6 +14,7 @@ import 'package:sklyit_business/screens/auth/LoginPage.dart';
 import 'package:sklyit_business/screens/business_view/customer_perspective.dart';
 import 'package:sklyit_business/screens/chat/chat_dashboard.dart';
 import 'package:sklyit_business/screens/flash/flash_main.dart';
+import 'package:sklyit_business/utils/socket/order_socket_service.dart';
 import 'package:sklyit_business/utils/socket/socket_service.dart';
 import 'api/check_refresh.dart';
 import 'screens/business_view/business_perspective.dart';
@@ -137,15 +138,19 @@ class _SklyitAppState extends State<SklyitApp> with WidgetsBindingObserver {
     if (logged && isValidRefresh) {
       uid = (await storage.read(key: 'userId'))!;
       SocketService().initialize(uid);
+      OrderSocketService().initialize(uid);
       return true;
     }
 
     return false;
   }
+  final OrderSocketService _orderSocketService = OrderSocketService();
+
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _orderSocketService.navigatorKey,
       title: 'Sklyit - Business Page',
       theme: ThemeData(
         primaryColor: Colors.amberAccent,

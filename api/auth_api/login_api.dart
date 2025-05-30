@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sklyit_business/api/Order/order_api.dart';
 import 'package:sklyit_business/providers/chat_provider.dart';
+import 'package:sklyit_business/utils/socket/order_socket_service.dart';
 import 'package:sklyit_business/utils/socket/socket_service.dart';
 import '../endpoints.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -33,6 +35,8 @@ class LoginAPIService {
         await ref.read(chatApiProvider).saveAndSendToken(uid);
         SocketService().initialize(uid);
         print("socket service initialized for ${decodedToken['sub']}");
+        OrderSocketService().initialize(uid);
+        print("order socket service initialized for ${decodedToken['sub']}");
         return 'Login successful';
       }
       print(response.data);
